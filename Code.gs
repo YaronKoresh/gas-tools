@@ -1048,12 +1048,18 @@ function ColumnToLetter(column) {
 }
 
 function ObjectToQueryString(obj) {
-  return encodeURI(Object.keys(obj).map(function (key,index) {
-    if( typeof obj[key] === "object" ){
-      return `${index === 0 ? '?' : '&'}` + [...Object.keys(obj[key])].map(k => `${key}[${k}]=${obj[key][k]}`).join("&");
+  const pairs = [];
+  Object.keys(obj).forEach(function (key) {
+    const value = obj[key];
+    if (value !== null && typeof value === "object") {
+      Object.keys(value).forEach(function (k) {
+        pairs.push(`${encodeURIComponent(key)}%5B${encodeURIComponent(k)}%5D=${encodeURIComponent(value[k])}`);
+      });
+    } else {
+      pairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
     }
-    return `${index === 0 ? '?' : '&'}${key}=${obj[key]}`;
-  }).join(''));
+  });
+  return pairs.join("&");
 }
 
 function GetQs(args) {
