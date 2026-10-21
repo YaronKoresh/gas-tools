@@ -82,3 +82,14 @@ test("a page with a body tag is not wrapped twice", () => {
   const out = run(page("<p>x</p>"));
   assert.strictEqual((out.match(/<body>/g) || []).length, 1, out);
 });
+
+test("escaped angle brackets in the text stay text and do not become tags", () => {
+  const out = run(page("<p>Use &lt;div&gt; tags</p><p>after</p>"));
+  assert.ok(out.includes("<p>Use &lt;div&gt; tags</p><p>after</p>"), out);
+});
+
+test("escaped markup in an attribute value is not turned into a tag", () => {
+  const out = run(page('<p title="&lt;b&gt;bold&lt;/b&gt;">x</p><p>y</p>'));
+  assert.ok(out.includes("<p>y</p>"), out);
+  assert.ok(!out.includes("<b>"), out);
+});

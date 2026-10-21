@@ -1523,7 +1523,7 @@ function UrlInfo(d) {
   url = FinalUrl(url);
   let dom = 'http://localhost:8000';
   let b = new Uint8Array(GetSync(url).getContent());
-  let str = Utilities.newBlob(b).getDataAsString().replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").trim();
+  let str = Utilities.newBlob(b).getDataAsString().replaceAll("&amp;","&").trim();
   if(!/<\s*body[\s>]/i.test(str)){
     const headOnly = /^\s*(?:<!doctype[^>]*>|<\s*\/?\s*(?:html|head)\b[^>]*>|<\s*(?:meta|link|base)\b[^>]*>|<\s*(title|style|script|noscript)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>)/i;
     let at = 0;
