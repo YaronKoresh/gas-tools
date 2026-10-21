@@ -976,11 +976,12 @@ function Stringify(obj) {
   let isFunc = typeof obj === "function";
   let isPromise = typeof obj === "object" && obj instanceof Promise;
   let isDate = typeof obj === "object" && obj instanceof Date;
+  let isBoxed = typeof obj === "object" && (obj instanceof Number || obj instanceof String || obj instanceof Boolean);
   if (isNull) {
     return "null";
   } else if (isUndefined) {
     return "null";
-  } else if (isDate) {
+  } else if (isDate || isBoxed) {
     return JSON.stringify(obj);
   } else if (isPromise) {
     throw new Error("Could not convert Promise into String!")
