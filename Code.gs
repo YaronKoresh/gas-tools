@@ -1613,7 +1613,7 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
 
   const results = new Array(arr.length);
   let completedWorkers = 0;
-  const asyncFnString = AsyncFun.toString();
+  const asyncFnString = Stringify(AsyncFun);
   const workerUrl = createWorker();
   const workers = new Set();
   const startTimers = [];

@@ -57,3 +57,10 @@ test("Threads runs a method given as a dependency", async () => {
   const results = await Threads(async (x) => twice(x), [4], [holder.twice]);
   assert.deepStrictEqual(results, [8]);
 });
+
+test("Threads runs a method given as the worker function", async () => {
+  const Threads = load();
+  const holder = { async triple(v) { return v * 3; } };
+  const results = await Threads(holder.triple, [4]);
+  assert.deepStrictEqual(results, [12]);
+});
