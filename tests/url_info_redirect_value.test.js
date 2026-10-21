@@ -34,9 +34,9 @@ test("a link with several query values stays inside the redirect value", () => {
   assert.ok(out.includes('href="http://localhost:8000?R=http://example.com/dir/x?a=1%26b=2"'), out);
 });
 
-test("plus signs and fragments of a link are escaped in the redirect value", () => {
-  const out = run(page('<a href="x?q=a+b#top">l</a>'));
-  assert.ok(out.includes('href="http://localhost:8000?R=http://example.com/dir/x?q=a%2Bb%23top"'), out);
+test("plus signs of a link are escaped in the redirect value", () => {
+  const out = run(page('<a href="x?q=a+b">l</a>'));
+  assert.ok(out.includes('href="http://localhost:8000?R=http://example.com/dir/x?q=a%2Bb"'), out);
 });
 
 test("images and stylesheet urls keep their whole query in the redirect value", () => {

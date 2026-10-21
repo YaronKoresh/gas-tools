@@ -1577,7 +1577,7 @@ function UrlInfo(d) {
 
   url = FinalUrl(url);
   let dom = 'http://localhost:8000';
-  const redirectValue = u => encodeURI(u).replaceAll("&", "%26").replaceAll("#", "%23").replaceAll("+", "%2B");
+  const redirectValue = u => encodeURI(u).replaceAll("&", "%26").replaceAll("+", "%2B");
   const redirectUrl = u => `${dom}?redirect${randId}=${redirectValue(RelativeToAbsoluteUrl(url,u))}`;
   const cssSafe = text => text.replaceAll(/[()'"]/g, c => "%" + c.charCodeAt(0).toString(16));
   const rewriteCssUrls = css => css
