@@ -52,3 +52,9 @@ test("Random throws for bounds that are not finite numbers instead of returning 
   assert.throws(() => R(0, Infinity), /finite/);
   assert.strictEqual(R(2, 2), 2);
 });
+
+test("Uuid throws for an infinite length instead of never ending", () => {
+  const U = new Function("Random", "UuidCharset", `${uuidSource}; return Uuid;`)(Random, () => ["a", "b"]);
+  assert.throws(() => U(Infinity), /finite/);
+  assert.strictEqual(U(4).length, 4);
+});

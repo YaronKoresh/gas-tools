@@ -906,6 +906,9 @@ function Alert(msg) {
 function Uuid(len) {
   const charset = UuidCharset();
   len = Math.max(1, len);
+  if (len === Infinity) {
+    throw new Error("Uuid needs a finite length");
+  }
   let ret = charset[Random(0, charset.length - 1)];
   for (let i = 0; i < len - 1; i++) {
     ret += charset[Random(0, charset.length - 1)];
