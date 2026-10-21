@@ -688,7 +688,7 @@ function Qr(txt, options = {}) {
 
 async function ExportRangeAsPng(sheet = null, start = "A1", end = null, options = {}) {
 
-  name = options["name"] ?? `טווח בטבלה`;
+  const name = options["name"] ?? `טווח בטבלה`;
 
   options = {
     fzr: false,
@@ -709,7 +709,7 @@ async function ExportRangeAsPng(sheet = null, start = "A1", end = null, options 
     await PdfToPng(pdf.getBlob())
   )[0];
 
-  blob.setName(TimeNow().replaceAll(":", "-") + " " + options["name"] + ".png");
+  blob.setName(TimeNow().replaceAll(":", "-") + " " + name + ".png");
 
   let img_id = SaveFile(blob, (options["path"] ?? "/") + "/" + DateNow().replaceAll("/", "-"));
   TrashFile(pdfId);
