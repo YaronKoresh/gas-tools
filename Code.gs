@@ -753,6 +753,15 @@ function GetEmail() {
   return Session.getEffectiveUser().getEmail();
 }
 
+function EscapeHtml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function Alert(msg) {
   let html = Html(`
     <style>
@@ -777,7 +786,7 @@ function Alert(msg) {
       }
     </style>
     <h1>
-      ${msg}
+      ${EscapeHtml(msg)}
     </h1>
   `);
   SpreadsheetApp.getUi().showModelessDialog(html.setWidth(300).setHeight(150), 'שימו לב');
