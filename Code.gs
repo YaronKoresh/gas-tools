@@ -353,6 +353,8 @@ function ReadFromDatabase(dbName, sheetName, key, miliseconds = 0) {
 function AddToDatabase(dbName, sheetName, key, value) {
 
   dbName = "Database " + dbName.toString();
+  const keyText = String(key);
+  const valueText = Stringify(value);
 
   let k = Lock();
   try {
@@ -434,8 +436,8 @@ function AddToDatabase(dbName, sheetName, key, value) {
 
     let next_row = current_sheet.getRange(`A1:A`).getValues().filter(row => (row[0] ?? "").toString().length >= 1).length + 1;
     current_sheet.getRange(`A${next_row}:A${next_row}`).setValue(ms.toString());
-    current_sheet.getRange(`B${next_row}:B${next_row}`).setNumberFormat("@").setValue(key.toString());
-    current_sheet.getRange(`C${next_row}:C${next_row}`).setNumberFormat("@").setValue(Stringify(value));
+    current_sheet.getRange(`B${next_row}:B${next_row}`).setNumberFormat("@").setValue(keyText);
+    current_sheet.getRange(`C${next_row}:C${next_row}`).setNumberFormat("@").setValue(valueText);
   } finally {
     Unlock(k);
   }

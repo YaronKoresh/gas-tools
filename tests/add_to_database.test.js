@@ -6,8 +6,8 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (name) => source.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}\\n`))[0];
 
-function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
-  const state = { released: 0, nowCalls: 0, writes: [], formats: [], moved: [], deleted: [] };
+function load({ driveThrows = false, dataColumn = [[""]], stringify = (v) => JSON.stringify(v) } = {}) {
+  const state = { created: 0, locked: 0, released: 0, nowCalls: 0, writes: [], formats: [], moved: [], deleted: [] };
   const rangeOf = (sheetName) => (a) => {
     const range = {
       getValues: () => (sheetName === "data" ? dataColumn : [[""]]),
@@ -36,12 +36,15 @@ function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
     getFilesByName: () => ({ hasNext: () => true, next: () => ({ moveTo() {} }) }),
   };
   const env = {
-    LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => state.released++ }) },
+    LockService: { getScriptLock: () => ({ tryLock: () => (state.locked++, true), releaseLock: () => state.released++ }) },
     SpreadsheetApp: {
       flush() {},
       open: () => mainSs,
       setActiveSpreadsheet() {},
-      create: () => dataSs,
+      create: () => {
+        state.created++;
+        return dataSs;
+      },
       openById: () => dataSs,
     },
     Random: () => 3,
@@ -58,7 +61,7 @@ function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
       },
     },
     Flatten: (arr) => arr.flat(Infinity),
-    Stringify: (v) => JSON.stringify(v),
+    Stringify: stringify,
   };
   const code = `${grab("Lock")}${grab("Unlock")}${grab("GetDatabaseFile")}${grab("AddToDatabase")}; return AddToDatabase;`;
   const AddToDatabase = new Function(...Object.keys(env), code)(...Object.values(env));
@@ -124,4 +127,23 @@ test("AddToDatabase moves the new shard by its id and not by a name lookup in th
   const { AddToDatabase, state } = load();
   AddToDatabase("db", "Logs", "k", 1);
   assert.deepStrictEqual(state.moved, ["data-id"]);
+});
+
+test("AddToDatabase rejects a value that cannot be stored before it creates a shard or takes the lock", () => {
+  const { AddToDatabase, state } = load({
+    stringify: () => {
+      throw new Error("Could not convert Promise into String!");
+    },
+  });
+  assert.throws(() => AddToDatabase("db", "Logs", "k", Promise.resolve(1)), /Promise/);
+  assert.strictEqual(state.created, 0);
+  assert.strictEqual(state.locked, 0);
+  assert.deepStrictEqual(state.writes, []);
+});
+
+test("AddToDatabase stores a missing key as the text of the key", () => {
+  const { AddToDatabase, state } = load();
+  AddToDatabase("db", "Logs", undefined, 1);
+  const dataWrites = state.writes.filter((w) => w[0] === "data").map((w) => w[2]);
+  assert.ok(dataWrites.includes("undefined"));
 });
