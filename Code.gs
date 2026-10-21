@@ -575,8 +575,8 @@ function OptimizePhotoUrl(url, quality = 50, px = 120) {
   if (scale >= 1) {
     return blob;
   }
-  width = (width * scale).toFixed(0);
-  height = (height * scale).toFixed(0);
+  width = Math.max(1, Math.round(width * scale)).toFixed(0);
+  height = Math.max(1, Math.round(height * scale)).toFixed(0);
   let resized = GetSync("https://resize.sardo.work", {
     imageUrl: url,
     width: width,
@@ -598,7 +598,7 @@ function OptimizePhotoId(id, px = 120) {
   }
   let blob2 = ImgApp.doResize(
     id,
-    (width * scale).toFixed(0)
+    Math.max(1, Math.round(width * scale)).toFixed(0)
   ).blob;
   return blob2;
 }

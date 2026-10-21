@@ -45,3 +45,9 @@ test("OptimizePhotoUrl throws when the resize service fails instead of returning
   const { fn } = load({ width: 1000, height: 500 }, [200, 500]);
   assert.throws(() => fn("http://x/y.png", 50, 120), /500/);
 });
+
+test("OptimizePhotoUrl never asks the service for a side of zero pixels", () => {
+  const { fn, calls } = load({ width: 1000, height: 1 });
+  fn("http://x/y.png", 50, 120);
+  assert.deepStrictEqual(calls[0][1], { imageUrl: "http://x/y.png", width: "120", height: "1", quality: 50 });
+});
