@@ -167,6 +167,8 @@ function CountFromDatabase(dbName, sheetName, key, miliseconds = 0) {
     min_ts = start_date.getTime() - ts_backward;
   }
 
+  let count = 0;
+
   dbName = "Database " + dbName.toString();
 
   let db_file = DriveApp.getRootFolder().getFoldersByName("[DB]").next().getFilesByName(dbName).next();
@@ -192,7 +194,7 @@ function CountFromDatabase(dbName, sheetName, key, miliseconds = 0) {
     let day = (+parts[0]);
     let current_datetime = (new Date(year, month_i, day, hr, min, sec));
     current_datetime.setTime(current_datetime.getTime() + 1000);
-    current_ts = current_datetime.getTime();
+    const current_ts = current_datetime.getTime();
     if (min_ts > current_ts) {
       break;
     }
@@ -264,7 +266,7 @@ function ReadFromDatabase(dbName, sheetName, key, miliseconds = 0) {
     let day = (+parts[0]);
     let current_datetime = (new Date(year, month_i, day, hr, min, sec));
     current_datetime.setTime(current_datetime.getTime() + 1000);
-    current_ts = current_datetime.getTime();
+    const current_ts = current_datetime.getTime();
     if (min_ts > current_ts) {
       return null;
     }
