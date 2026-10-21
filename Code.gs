@@ -119,7 +119,7 @@ function Exec(str, ...args) {
 }
 
 function Unique(arr, min_length = 0) {
-  return [...new Set(arr.filter(v => v.toString().length >= min_length))];
+  return [...new Set(arr.filter(v => (v ?? "").toString().length >= min_length))];
 }
 
 function Html(str) {
