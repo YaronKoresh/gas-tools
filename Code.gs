@@ -1785,8 +1785,33 @@ function UrlInfo(d) {
   const rewriteCssUrls = css => css
     .replaceAll(/url\(\s*(&quot;|&#34;|&apos;|&#39;|['"]?)((?:(?!&quot;|&#34;|&apos;|&#39;)[^'")])+?)\1\s*\)/gi, (all, quote, u) => /^(data|javascript|#)/i.test(u.trim()) ? all : `url(${quote}${cssSafe(redirectUrl(u.trim()))}${quote})`)
     .replaceAll(/@import\s+(['"])([^'"]+)\1/gi, (all, quote, u) => `@import ${quote}${cssSafe(redirectUrl(u.trim()))}${quote}`);
-  let b = new Uint8Array(GetSync(url).getContent());
-  let str = Utilities.newBlob(b).getDataAsString().trim();
+  const response = GetSync(url);
+  let b = new Uint8Array(response.getContent());
+  const declaredCharset = (() => {
+    const clean = name => /^[\w.:\-]+$/.test(name) ? name : "";
+    try {
+      const responseHeaders = response.getHeaders();
+      const typeKey = Object.keys(responseHeaders).find(k => k.toLowerCase() === "content-type");
+      const fromHeader = typeKey ? /charset\s*=\s*["']?([^;"'\s]+)/i.exec(String(responseHeaders[typeKey])) : null;
+      if(fromHeader && clean(fromHeader[1])){
+        return fromHeader[1];
+      }
+    } catch (e) {
+    }
+    const probe = [...b.slice(0, 2048)].map(code => String.fromCharCode(code)).join("");
+    const fromMeta = /<meta[^>]*?charset\s*=\s*["']?([\w.:\-]+)/i.exec(probe);
+    return fromMeta ? fromMeta[1] : "";
+  })();
+  const decode = bytes => {
+    if(declaredCharset !== "" && !/^utf-?8$/i.test(declaredCharset)){
+      try {
+        return Utilities.newBlob(bytes).getDataAsString(declaredCharset);
+      } catch (e) {
+      }
+    }
+    return Utilities.newBlob(bytes).getDataAsString();
+  };
+  let str = decode(b).trim();
   if(!/<\s*body[\s>]/i.test(str)){
     const headOnly = /^\s*(?:<!doctype[^>]*>|<\s*\/?\s*(?:html|head)\b[^>]*>|<\s*(?:meta|link|base)\b[^>]*>|<\s*(title|style|script|noscript)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>)/i;
     let at = 0;
