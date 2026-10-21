@@ -57,3 +57,18 @@ test("TryRepeatedly throws the last error after the attempts run out", () => {
   );
   assert.strictEqual(calls, 3);
 });
+
+test("TryRepeatedly refuses a missing number of attempts instead of retrying forever", () => {
+  const { TryRepeatedly, state } = load();
+  let calls = 0;
+  assert.throws(() => quiet(() => TryRepeatedly(undefined, () => { calls++; throw new Error("x"); })), /number of attempts/);
+  assert.strictEqual(calls, 0);
+  assert.deepStrictEqual(state.sleeps, []);
+});
+
+test("TryRepeatedly accepts the number of attempts as text", () => {
+  const { TryRepeatedly } = load();
+  let calls = 0;
+  assert.throws(() => quiet(() => TryRepeatedly("2", () => { calls++; throw new Error("x"); })), /x/);
+  assert.strictEqual(calls, 2);
+});

@@ -1202,6 +1202,10 @@ function TryEndlessly(Func, ...args) {
 }
 
 function TryRepeatedly(attempts, Func, ...args) {
+  attempts = Number(attempts);
+  if (Number.isNaN(attempts)) {
+    throw new Error("TryRepeatedly needs a number of attempts");
+  }
   for (let attempt = 1; ; attempt++) {
     try {
       return Func(...args);
