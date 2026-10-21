@@ -1709,7 +1709,7 @@ function UrlInfo(d) {
     .replaceAll(/url\(\s*(['"]?)([^'")]+?)\1\s*\)/gi, (all, quote, u) => /^(data|javascript|#)/i.test(u.trim()) ? all : `url(${quote}${cssSafe(redirectUrl(u.trim()))}${quote})`)
     .replaceAll(/@import\s+(['"])([^'"]+)\1/gi, (all, quote, u) => `@import ${quote}${cssSafe(redirectUrl(u.trim()))}${quote}`);
   let b = new Uint8Array(GetSync(url).getContent());
-  let str = Utilities.newBlob(b).getDataAsString().replaceAll("&amp;","&").trim();
+  let str = Utilities.newBlob(b).getDataAsString().trim();
   if(!/<\s*body[\s>]/i.test(str)){
     const headOnly = /^\s*(?:<!doctype[^>]*>|<\s*\/?\s*(?:html|head)\b[^>]*>|<\s*(?:meta|link|base)\b[^>]*>|<\s*(title|style|script|noscript)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>)/i;
     let at = 0;
@@ -2065,8 +2065,6 @@ function UrlInfo(d) {
 
   console.log(`HTML Post-Processing`);
   consl = consl.trim() + `</body></html>`;
-  consl = consl.replaceAll(/&amp;|&#038;/g,"&").trim();
-  consl = consl.replaceAll(/&amp;|&#038;/g,"&").trim();
   console.log(`HTML Output`);
   return Out(consl);
 }
