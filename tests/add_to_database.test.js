@@ -7,12 +7,19 @@ const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (name) => source.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}\\n`))[0];
 
 function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
-  const state = { released: 0, nowCalls: 0, writes: [], deleted: [] };
-  const rangeOf = (sheetName) => (a) => ({
-    getValues: () => (sheetName === "data" ? dataColumn : [[""]]),
-    setValue: (v) => state.writes.push([sheetName, a, v]),
-    setValues: (v) => state.writes.push([sheetName, a, v]),
-  });
+  const state = { released: 0, nowCalls: 0, writes: [], formats: [], deleted: [] };
+  const rangeOf = (sheetName) => (a) => {
+    const range = {
+      getValues: () => (sheetName === "data" ? dataColumn : [[""]]),
+      setNumberFormat: (f) => {
+        state.formats.push([sheetName, a, f]);
+        return range;
+      },
+      setValue: (v) => state.writes.push([sheetName, a, v]),
+      setValues: (v) => state.writes.push([sheetName, a, v]),
+    };
+    return range;
+  };
   const dataSheet = { getSheetId: () => 2, deleteColumns() {}, getRange: rangeOf("data") };
   const defaultSheet = { getSheetId: () => 1, deleteColumns() {}, getRange: rangeOf("default") };
   const dataSs = {
@@ -92,4 +99,12 @@ test("AddToDatabase finds the main sheet when it is not called Sheet1 and remove
   AddToDatabase("db", "Logs", "k", 1);
   assert.deepStrictEqual(state.deleted, [1]);
   assert.ok(state.writes.some((w) => w[0] === "main"));
+});
+
+test("AddToDatabase stores the key and the value as plain text so Sheets cannot reinterpret them", () => {
+  const { AddToDatabase, state } = load();
+  AddToDatabase("db", "Logs", "007", { a: 1 });
+  const formats = state.formats.filter((f) => f[0] === "data").map((f) => [f[1], f[2]]);
+  assert.deepStrictEqual(formats, [["B1:B1", "@"], ["C1:C1", "@"]]);
+  assert.ok(state.writes.some((w) => w[0] === "data" && w[2] === "007"));
 });
