@@ -1111,8 +1111,11 @@ function ParseUrlContent(url, headers = {}) {
     'muteHttpExceptions': true,
     ...headers
   };
-  let blob = UrlFetchApp.fetch(url, params).getBlob();
-  return blob.getBytes();
+  let res = UrlFetchApp.fetch(url, params);
+  if (res.getResponseCode() >= 400) {
+    throw new Error(`Could not read the url (${res.getResponseCode()}): ${url}`);
+  }
+  return res.getBlob().getBytes();
 }
 
 function FinalUrl(url, headers = {}) {
