@@ -1152,7 +1152,8 @@ function GetType(url, headers = {}) {
     let code = res.getResponseCode();
     if(code<400){
       contentType = (contentType ?? "").toString();
-      return contentType.length >= 1 ? contentType.split(";")[0] : "application/unknown";
+      const mediaType = contentType.split(";")[0].trim().toLowerCase();
+      return mediaType.length >= 1 ? mediaType : "application/unknown";
     } else {
       return null;
     }

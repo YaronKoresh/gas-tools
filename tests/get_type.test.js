@@ -48,3 +48,13 @@ test("GetType gives application/unknown when the content type is missing or empt
 test("GetType returns null for an error status", () => {
   assert.strictEqual(load(reply({ "Content-Type": "text/html" }, 404)).GetType("http://x/y"), null);
 });
+
+test("GetType returns the media type in lower case without surrounding spaces", () => {
+  const { GetType } = load(reply({ "Content-Type": " Image/PNG ; charset=binary" }));
+  assert.strictEqual(GetType("http://x/y"), "image/png");
+});
+
+test("GetType treats a blank content type as unknown", () => {
+  const { GetType } = load(reply({ "Content-Type": "   " }));
+  assert.strictEqual(GetType("http://x/y"), "application/unknown");
+});
