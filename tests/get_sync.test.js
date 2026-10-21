@@ -36,3 +36,13 @@ test("GetSync keeps a url that ends with a question mark valid", () => {
   GetSync("https://a.example.com/x?", { a: 2 });
   assert.strictEqual(calls[0].url, "https://a.example.com/x?a=2");
 });
+
+test("GetSync puts the parameters before a fragment", () => {
+  const { GetSync, calls } = load();
+  GetSync("https://a.example.com/x#top", { a: 1 });
+  GetSync("https://a.example.com/x?p=1#top", { a: 1 });
+  GetSync("https://a.example.com/x#top");
+  assert.strictEqual(calls[0].url, "https://a.example.com/x?a=1#top");
+  assert.strictEqual(calls[1].url, "https://a.example.com/x?p=1&a=1#top");
+  assert.strictEqual(calls[2].url, "https://a.example.com/x#top");
+});
