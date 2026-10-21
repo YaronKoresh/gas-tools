@@ -738,8 +738,8 @@ function DateNow(language = "en", country = "IL", timeZone = "Asia/Jerusalem") {
 function TimeNow(language = "en", country = "IL", timeZone = "Asia/Jerusalem") {
   return (new Date()).toLocaleTimeString(`${language}-${country}`, {
     timeZone: timeZone,
-    hour12: false,
-    hour: 'numeric',
+    hourCycle: 'h23',
+    hour: '2-digit',
     minute: '2-digit',
     second: "2-digit"
   });
