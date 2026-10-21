@@ -1734,7 +1734,7 @@ function UrlInfo(d) {
   const redirectUrl = u => `${dom}?redirect${randId}=${redirectValue(RelativeToAbsoluteUrl(url,u))}`;
   const cssSafe = text => text.replaceAll(/[()'"]/g, c => "%" + c.charCodeAt(0).toString(16));
   const rewriteCssUrls = css => css
-    .replaceAll(/url\(\s*(['"]?)([^'")]+?)\1\s*\)/gi, (all, quote, u) => /^(data|javascript|#)/i.test(u.trim()) ? all : `url(${quote}${cssSafe(redirectUrl(u.trim()))}${quote})`)
+    .replaceAll(/url\(\s*(&quot;|&#34;|&apos;|&#39;|['"]?)((?:(?!&quot;|&#34;|&apos;|&#39;)[^'")])+?)\1\s*\)/gi, (all, quote, u) => /^(data|javascript|#)/i.test(u.trim()) ? all : `url(${quote}${cssSafe(redirectUrl(u.trim()))}${quote})`)
     .replaceAll(/@import\s+(['"])([^'"]+)\1/gi, (all, quote, u) => `@import ${quote}${cssSafe(redirectUrl(u.trim()))}${quote}`);
   let b = new Uint8Array(GetSync(url).getContent());
   let str = Utilities.newBlob(b).getDataAsString().trim();
