@@ -121,7 +121,7 @@ Generate an image from a chart or data table and get its Drive file ID.
 
 ```JavaScript
 
-function exportChart() {  
+async function exportChart() {  
   // Options for the PDF export that becomes the PNG  
   let options = {  
     name: "Monthly_Sales_Report", // File name  
@@ -132,7 +132,7 @@ function exportChart() {
   };
 
   // ExportRangeAsPng(sheetName, startCell, endCell, options)  
-  let imageId = ExportRangeAsPng("Dashboard", "A1", "G20", options);  
+  let imageId = await ExportRangeAsPng("Dashboard", "A1", "G20", options);  
     
   console.log("Image saved to Drive with ID: " + imageId);  
     
