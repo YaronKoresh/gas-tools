@@ -7,7 +7,7 @@ const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (re) => source.match(re)[0];
 
 function run(start, end, sheetName = "S", options = {}, full = false) {
-  const state = { url: null };
+  const state = { url: null, saved: null, name: null };
   const env = {
     SpreadsheetApp: {
       getActiveSpreadsheet: () => ({ getSheetByName: (n) => (n === "S" ? { getSheetId: () => 7 } : null), getId: () => "SS" }),
@@ -17,12 +17,12 @@ function run(start, end, sheetName = "S", options = {}, full = false) {
     UrlFetchApp: {
       fetch: (u) => {
         state.url = u;
-        return { getBlob: () => ({ setName() {} }) };
+        return { getBlob: () => ({ setName: (n) => (state.name = n) }) };
       },
     },
     TimeNow: () => "10:00:00",
     DateNow: () => "21/10/2026",
-    SaveFile: () => "id",
+    SaveFile: (blob, p) => ((state.saved = p), "id"),
     GetColumnsCount: () => 28,
     GetRowsCount: () => 100,
   };
@@ -43,6 +43,9 @@ function run(start, end, sheetName = "S", options = {}, full = false) {
     console.log = orig;
   }
   const q = new URL(state.url).searchParams;
+  if (full === "saved") {
+    return { name: state.name, path: state.saved };
+  }
   if (full) {
     return q;
   }
@@ -78,4 +81,15 @@ test("ExportPdf does not send the name and path options to the export url", () =
   assert.strictEqual(q.has("name"), false);
   assert.strictEqual(q.has("path"), false);
   assert.strictEqual(q.get("size"), "A3");
+});
+
+test("ExportPdf names the file after the time and the name option and saves it under the path and date", () => {
+  assert.deepStrictEqual(run("A1", "B2", "S", { name: "report", path: "/Reports" }, "saved"), {
+    name: "10-00-00 report.pdf",
+    path: "/Reports/21-10-2026",
+  });
+});
+
+test("ExportPdf uses export as the default name and the root as the default path", () => {
+  assert.deepStrictEqual(run("A1", "B2", "S", {}, "saved"), { name: "10-00-00 export.pdf", path: "//21-10-2026" });
 });
