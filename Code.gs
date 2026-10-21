@@ -151,7 +151,7 @@ function CreateDatabase(dbName) {
   if (!folder.getFilesByName(dbName).hasNext()) {
     let ss = SpreadsheetApp.create(dbName);
     SpreadsheetApp.setActiveSpreadsheet(ss);
-    let sh = ss.getSheetByName("Sheet1");
+    let sh = ss.getSheets()[0];
     sh.deleteColumns(3, 24);
     DriveApp.getRootFolder().getFilesByName(dbName).next().moveTo(folder);
   }
@@ -176,11 +176,11 @@ function CountFromDatabase(dbName, sheetName, key, miliseconds = 0) {
   let main_ss = SpreadsheetApp.open(db_file);
   SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
-  let ids = main_ss.getSheetByName("Sheet1").getRange("B1:B");
+  let ids = main_ss.getSheets()[0].getRange("B1:B");
   let id_values = Flatten(ids.getValues().filter(v => v.toString().length >= 1));
   id_values.reverse();
 
-  let seconds_col = main_ss.getSheetByName("Sheet1").getRange("A1:A");
+  let seconds_col = main_ss.getSheets()[0].getRange("A1:A");
   let second_values = Flatten(seconds_col.getValues().filter(v => v.toString().length >= 1));
   second_values.reverse();
 
@@ -248,11 +248,11 @@ function ReadFromDatabase(dbName, sheetName, key, miliseconds = 0) {
   let main_ss = SpreadsheetApp.open(db_file);
   SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
-  let ids = main_ss.getSheetByName("Sheet1").getRange("B1:B");
+  let ids = main_ss.getSheets()[0].getRange("B1:B");
   let id_values = Flatten(ids.getValues().filter(v => v.toString().length >= 1));
   id_values.reverse();
 
-  let seconds_col = main_ss.getSheetByName("Sheet1").getRange("A1:A");
+  let seconds_col = main_ss.getSheets()[0].getRange("A1:A");
   let second_values = Flatten(seconds_col.getValues().filter(v => v.toString().length >= 1));
   second_values.reverse();
 
@@ -324,7 +324,7 @@ function AddToDatabase(dbName, sheetName, key, value) {
     SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
     let main_name = main_ss.getName();
-    let main_sh = main_ss.getSheetByName("Sheet1");
+    let main_sh = main_ss.getSheets()[0];
 
     let sec_linking_col = main_sh.getRange("A1:A");
     let sec_linking_values = Flatten(sec_linking_col.getValues());
@@ -374,10 +374,11 @@ function AddToDatabase(dbName, sheetName, key, value) {
     }
 
     if (created_new_ss) {
-      if (sheetName === "Sheet1") {
+      const default_sheet = current_sec_ss.getSheets()[0];
+      if (default_sheet.getSheetId() === current_sheet.getSheetId()) {
         current_sheet.deleteColumns(4, 23);
       } else {
-        current_sec_ss.deleteSheet(current_sec_ss.getSheetByName("Sheet1"));
+        current_sec_ss.deleteSheet(default_sheet);
       }
     }
 

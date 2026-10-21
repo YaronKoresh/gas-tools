@@ -7,21 +7,23 @@ const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (name) => source.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}\\n`))[0];
 
 function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
-  const state = { released: 0, nowCalls: 0, writes: [] };
+  const state = { released: 0, nowCalls: 0, writes: [], deleted: [] };
   const rangeOf = (sheetName) => (a) => ({
     getValues: () => (sheetName === "data" ? dataColumn : [[""]]),
     setValue: (v) => state.writes.push([sheetName, a, v]),
     setValues: (v) => state.writes.push([sheetName, a, v]),
   });
-  const dataSheet = { deleteColumns() {}, getRange: rangeOf("data") };
+  const dataSheet = { getSheetId: () => 2, deleteColumns() {}, getRange: rangeOf("data") };
+  const defaultSheet = { getSheetId: () => 1, deleteColumns() {}, getRange: rangeOf("default") };
   const dataSs = {
     getId: () => "data-id",
     getSheetByName: (n) => (n === "Logs" ? dataSheet : null),
+    getSheets: () => [defaultSheet, dataSheet],
     insertSheet: () => dataSheet,
-    deleteSheet() {},
+    deleteSheet: (sheet) => state.deleted.push(sheet.getSheetId()),
   };
   const mainSheet = { getRange: rangeOf("main") };
-  const mainSs = { getName: () => "Database db", getSheetByName: () => mainSheet };
+  const mainSs = { getName: () => "Database db", getSheets: () => [mainSheet], getSheetByName: () => null };
   const folder = {
     getFoldersByName: () => ({ next: () => folder }),
     getFilesByName: () => ({ next: () => ({ moveTo() {} }) }),
@@ -83,4 +85,11 @@ test("AddToDatabase writes to the first row of an empty sheet", () => {
   AddToDatabase("db", "Logs", "k", 1);
   const addresses = state.writes.filter((w) => w[0] === "data").map((w) => w[1]);
   assert.deepStrictEqual(addresses, ["A1:A1", "B1:B1", "C1:C1"]);
+});
+
+test("AddToDatabase finds the main sheet when it is not called Sheet1 and removes the default sheet of a new shard", () => {
+  const { AddToDatabase, state } = load();
+  AddToDatabase("db", "Logs", "k", 1);
+  assert.deepStrictEqual(state.deleted, [1]);
+  assert.ok(state.writes.some((w) => w[0] === "main"));
 });

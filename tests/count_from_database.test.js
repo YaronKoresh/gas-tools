@@ -22,7 +22,7 @@ function load(shardRows) {
     getRootFolder: () => ({ getFoldersByName: () => ({ next: () => ({ getFilesByName: () => ({ next: () => ({}) }) }) }) }),
   };
   const SpreadsheetApp = {
-    open: () => ({ getSheetByName: () => main }),
+    open: () => ({ getSheets: () => [main], getSheetByName: () => main }),
     setActiveSpreadsheet() {},
     openById: () => ({ getSheetByName: (n) => (n === "Logs" ? shard : null) }),
   };
