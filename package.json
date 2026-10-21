@@ -1,0 +1,12 @@
+{
+  "name": "gas-tools",
+  "private": true,
+  "description": "Google Apps Script utility library",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

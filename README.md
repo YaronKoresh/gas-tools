@@ -242,6 +242,16 @@ Your appsscript.json configures this script to request the following permissions
 
 Feel free to fork this repository, submit pull requests, or open issues for bugs and feature requests.
 
+### **Running the tests**
+
+The tests run on Node.js 20 or newer and need no dependencies:
+
+```
+npm test
+```
+
+The same command runs in GitHub Actions on every push and pull request.
+
 ## **📄 License**
 
 This project is licensed under the MIT License. See the LICENSE file for details.
