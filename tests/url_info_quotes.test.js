@@ -54,3 +54,16 @@ test("a quote inside a script string does not hide the markup after the script",
   const out = run(`<html><head><script>var a = "it's"; var b = 'say "x"';</script></head><body><div>ok</div><p>after</p></body></html>`);
   assert.ok(out.includes("<div>ok</div><p>after</p>"), out);
 });
+
+test("an HTML comment is dropped instead of showing up as text", () => {
+  const out = run(page("<!-- hidden note --><p>x</p>"));
+  assert.ok(!out.includes("hidden note"), out);
+  assert.ok(!out.includes("--"), out);
+  assert.ok(out.includes("<p>x</p>"), out);
+});
+
+test("a comment with tags and quotes inside does not disturb the page", () => {
+  const out = run(page(`<!-- <div class="a"> it's --><p>x</p><p>y</p>`));
+  assert.ok(out.includes("<p>x</p><p>y</p>"), out);
+  assert.ok(!out.includes("class"), out);
+});

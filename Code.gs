@@ -1535,6 +1535,8 @@ function UrlInfo(d) {
 
   console.log("Generating HTML for cloning...");
 
+  str = str.replaceAll(/<!--[\s\S]*?(-->|$)/g,"");
+
   const markup = str;
   str = str.split("");
   let isText = "";
