@@ -67,3 +67,18 @@ test("a comment with tags and quotes inside does not disturb the page", () => {
   assert.ok(out.includes("<p>x</p><p>y</p>"), out);
   assert.ok(!out.includes("class"), out);
 });
+
+test("a page without a body tag keeps its content", () => {
+  const out = run("<p>just text</p><p>more</p>");
+  assert.ok(out.includes("<body><p>just text</p><p>more</p></body>"), out);
+});
+
+test("content after the head of a page without a body tag is kept", () => {
+  const out = run("<!doctype html><html><head><title>t</title></head><p>after head</p></html>");
+  assert.ok(out.includes("<body><p>after head</p></body>"), out);
+});
+
+test("a page with a body tag is not wrapped twice", () => {
+  const out = run(page("<p>x</p>"));
+  assert.strictEqual((out.match(/<body>/g) || []).length, 1, out);
+});

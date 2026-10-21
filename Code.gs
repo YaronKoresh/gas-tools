@@ -1524,6 +1524,17 @@ function UrlInfo(d) {
   let dom = 'http://localhost:8000';
   let b = new Uint8Array(GetSync(url).getContent());
   let str = Utilities.newBlob(b).getDataAsString().replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").trim();
+  if(!/<\s*body[\s>]/i.test(str)){
+    const headOnly = /^\s*(?:<!doctype[^>]*>|<\s*\/?\s*(?:html|head)\b[^>]*>|<\s*(?:meta|link|base)\b[^>]*>|<\s*(title|style|script|noscript)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>)/i;
+    let at = 0;
+    let headPart;
+    while((headPart = headOnly.exec(str.slice(at)))){
+      at += headPart[0].length;
+    }
+    str = str.slice(0,at) + "<body>" + str.slice(at);
+    const htmlEnd = str.search(/<\s*\/\s*html\s*>\s*$/i);
+    str = htmlEnd === -1 ? str + "</body>" : str.slice(0,htmlEnd) + "</body>" + str.slice(htmlEnd);
+  }
   let tester = str.replaceAll(/\s*/gsm,"");
   if(!tester.endsWith(`</html>`)){
     if( str.match(body) ){
