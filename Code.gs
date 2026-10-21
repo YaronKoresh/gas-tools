@@ -217,14 +217,14 @@ function CountFromDatabase(dbName, sheetName, key, miliseconds = 0) {
     let keys = Flatten(current_sheet.getRange("B1:B").getValues());
     keys = keys.reverse();
 
-    let backward_index = keys.indexOf(key);
+    let backward_index = keys.findIndex(k => String(k) === String(key));
     if (backward_index === -1) {
       continue;
     }
 
     let sec_ts = (new Date(year, month_i, day, hr, min, sec)).getTime();
 
-    let matched_indexes = keys.map((k, i) => k === key ? i : -1).filter(ind => ind >= 0);
+    let matched_indexes = keys.map((k, i) => String(k) === String(key) ? i : -1).filter(ind => ind >= 0);
     let matched_indexes_in_time = matched_indexes.filter(
       tested_index => min_ts <= (
         +timestamps[tested_index] + sec_ts
@@ -289,7 +289,7 @@ function ReadFromDatabase(dbName, sheetName, key, miliseconds = 0) {
     let keys = Flatten(current_sheet.getRange("B1:B").getValues());
     keys = keys.reverse();
 
-    let backward_index = keys.indexOf(key);
+    let backward_index = keys.findIndex(k => String(k) === String(key));
     if (backward_index === -1) {
       continue;
     }
