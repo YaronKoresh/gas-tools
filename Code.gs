@@ -513,12 +513,12 @@ function OptimizePhotoUrl(url, quality = 50, px = 120) {
   }
   width = (width * scale).toFixed(0);
   height = (height * scale).toFixed(0);
-  return GetSync("https://resize.sardo.work",{
+  return GetSync("https://resize.sardo.work", {
     imageUrl: url,
     width: width,
     height: height,
     quality: quality
-  });
+  }).getBlob();
 }
 
 function OptimizePhotoId(id, px = 120) {

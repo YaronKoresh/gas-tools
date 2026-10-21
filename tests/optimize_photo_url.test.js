@@ -1,0 +1,36 @@
+const test = require("node:test");
+const assert = require("node:assert");
+const fs = require("node:fs");
+const path = require("node:path");
+
+const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
+const fnSource = source.match(/function OptimizePhotoUrl[\s\S]*?\n}\n/)[0];
+
+function load(size) {
+  const original = { kind: "original-blob" };
+  const resized = { kind: "resized-blob" };
+  const calls = [];
+  const env = {
+    FinalUrl: (u) => u,
+    UrlFetchApp: { fetch: () => ({ getBlob: () => original }) },
+    ImgApp: { getSize: () => size },
+    GetSync: (url, params) => {
+      calls.push([url, params]);
+      return { getBlob: () => resized };
+    },
+  };
+  const fn = new Function(...Object.keys(env), `${fnSource}; return OptimizePhotoUrl;`)(...Object.values(env));
+  return { fn, original, resized, calls };
+}
+
+test("OptimizePhotoUrl returns the resized blob for a large image", () => {
+  const { fn, resized, calls } = load({ width: 1000, height: 500 });
+  assert.strictEqual(fn("http://x/y.png", 50, 120), resized);
+  assert.deepStrictEqual(calls[0][1], { imageUrl: "http://x/y.png", width: "120", height: "60", quality: 50 });
+});
+
+test("OptimizePhotoUrl returns the original blob for a small image", () => {
+  const { fn, original, calls } = load({ width: 100, height: 50 });
+  assert.strictEqual(fn("http://x/y.png", 50, 120), original);
+  assert.strictEqual(calls.length, 0);
+});
