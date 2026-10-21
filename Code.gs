@@ -355,7 +355,8 @@ function AddToDatabase(dbName, sheetName, key, value) {
 
   let k = Lock();
   try {
-    let current_sec = Now();
+    const clock = new Date();
+    let current_sec = Now(clock);
     let parts = current_sec.split(/[\.\/ :]/);
     let hr = (+parts[3]);
     let min = (+parts[4]);
@@ -364,7 +365,7 @@ function AddToDatabase(dbName, sheetName, key, value) {
     let month_i = (+parts[1]) - 1;
     let day = (+parts[0]);
     let current_datetime = (new Date(year, month_i, day, hr, min, sec));
-    let ms = (new Date()).getTime() - current_datetime.getTime();
+    let ms = clock.getTime() - current_datetime.getTime();
 
     let db_file = GetDatabaseFile(dbName);
     let main_ss = SpreadsheetApp.open(db_file);
@@ -853,12 +854,12 @@ async function ExportRangeAsPng(sheet = null, start = "A1", end = null, options 
   }
 }
 
-function Now() {
-  return DateNow() + " " + TimeNow();
+function Now(date = new Date()) {
+  return DateNow("en", "IL", "Asia/Jerusalem", date) + " " + TimeNow("en", "IL", "Asia/Jerusalem", date);
 }
 
-function DateNow(language = "en", country = "IL", timeZone = "Asia/Jerusalem") {
-  return (new Date()).toLocaleDateString(`${language}-${country}`, {
+function DateNow(language = "en", country = "IL", timeZone = "Asia/Jerusalem", date = new Date()) {
+  return date.toLocaleDateString(`${language}-${country}`, {
     timeZone: timeZone,
     weekday: undefined,
     year: 'numeric',
@@ -867,8 +868,8 @@ function DateNow(language = "en", country = "IL", timeZone = "Asia/Jerusalem") {
   });
 }
 
-function TimeNow(language = "en", country = "IL", timeZone = "Asia/Jerusalem") {
-  return (new Date()).toLocaleTimeString(`${language}-${country}`, {
+function TimeNow(language = "en", country = "IL", timeZone = "Asia/Jerusalem", date = new Date()) {
+  return date.toLocaleTimeString(`${language}-${country}`, {
     timeZone: timeZone,
     hourCycle: 'h23',
     hour: '2-digit',
