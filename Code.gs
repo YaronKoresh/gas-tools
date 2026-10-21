@@ -459,6 +459,7 @@ function TrashFile(id) {
 }
 
 async function PhotoTemp(apiLayerApiKey) {
+  let cell = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getActiveCell();
   let imgId = await ExportCurrentCellPhoto();
   ShareFile(imgId);
 
@@ -485,11 +486,11 @@ async function PhotoTemp(apiLayerApiKey) {
 
   TrashFile(imgId);
 
-  Lock(3);
+  let l = Lock();
 
   cell.setValue(obj['image_url']);
 
-  Unlock(3);
+  Unlock(l);
 }
 
 function BlobToDataUrl(blob) {
