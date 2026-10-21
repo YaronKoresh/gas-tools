@@ -970,7 +970,19 @@ function Stringify(obj, asCode = false) {
     return text === "null" || asCode ? text : JSON.stringify(text);
   };
   const Primitive = function (val) {
-    return typeof val === "symbol" ? "null" : JSON.stringify(val);
+    if (typeof val === "symbol") {
+      return "null";
+    }
+    if (asCode && typeof val === "number" && !Number.isFinite(val)) {
+      return Number.isNaN(val) ? "NaN" : val > 0 ? "Infinity" : "-Infinity";
+    }
+    if (asCode && typeof val === "number" && Object.is(val, -0)) {
+      return "-0";
+    }
+    if (asCode && typeof val === "bigint") {
+      return val.toString() + "n";
+    }
+    return JSON.stringify(val);
   };
   let ret = "";
   let isArr = Array.isArray(obj);
@@ -980,6 +992,9 @@ function Stringify(obj, asCode = false) {
   let isFunc = typeof obj === "function";
   let isPromise = typeof obj === "object" && obj instanceof Promise;
   let isDate = typeof obj === "object" && obj instanceof Date;
+  let isRegExp = typeof obj === "object" && obj instanceof RegExp;
+  let isMap = typeof obj === "object" && obj instanceof Map;
+  let isSet = typeof obj === "object" && obj instanceof Set;
   let isBoxed = typeof obj === "object" && (obj instanceof Number || obj instanceof String || obj instanceof Boolean);
   if (isNull) {
     return "null";
@@ -987,6 +1002,12 @@ function Stringify(obj, asCode = false) {
     return "null";
   } else if (isDate && asCode) {
     return isNaN(obj.getTime()) ? "new Date(NaN)" : `new Date(${JSON.stringify(obj.toISOString())})`;
+  } else if (asCode && isRegExp) {
+    return `new RegExp(${JSON.stringify(obj.source)}, ${JSON.stringify(obj.flags)})`;
+  } else if (asCode && isMap) {
+    return `new Map([${[...obj].map(pair => `[${Stringify(pair[0], true)},${Stringify(pair[1], true)}]`).join(",")}])`;
+  } else if (asCode && isSet) {
+    return `new Set([${[...obj].map(item => Stringify(item, true)).join(",")}])`;
   } else if (isDate || isBoxed) {
     return JSON.stringify(obj);
   } else if (isPromise) {
