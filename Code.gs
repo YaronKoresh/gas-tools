@@ -1126,15 +1126,19 @@ function SaveUrl(url, path = "/") {
   let parts = path.split("/");
   let folders = parts.slice(0, parts.length - 1);
   let name = parts[parts.length - 1];
+  if (name === "") {
+    name = url.split(/[?#]/)[0].split("/").pop() || "file";
+  }
   let type = GetType(url);
   let bytes = ParseUrlContent(url);
   let blob = PackContent(name, type, bytes);
   let folder = DriveApp.getRootFolder();
   for (let i = 0; i < folders.length; i++) {
     if (folders[i] === "") {
-      break;
+      continue;
     }
-    folder = folder.getFoldersByName(folders[i]).next();
+    let found = folder.getFoldersByName(folders[i]);
+    folder = found.hasNext() ? found.next() : folder.createFolder(folders[i]);
   }
   return folder.createFile(blob).getId();
 }
