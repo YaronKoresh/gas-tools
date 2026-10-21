@@ -615,7 +615,7 @@ async function CurrentPhotoIntoUrl(bitlyApiKey, bitlyGuid) {
 }
 
 function OpenFile(id) {
-  let url = DriveIdToUrl(id);
+  let url = EscapeHtml(DriveIdToUrl(id));
   let html = Html(`
     <button id="1">
       <a style="display: none;" id="2" target="_blank" href="${url}"></a>
