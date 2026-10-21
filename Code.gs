@@ -59,6 +59,11 @@ function GetSync(path, params_obj = {}, headers_obj = {}) {
 }
 
 function Range(min, max) {
+  min = Number(min);
+  max = Number(max);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    throw new Error("Range needs finite numbers: " + min + ", " + max);
+  }
   let ret = [];
   for (let i = min; i <= max; i++) {
     ret.push(i);

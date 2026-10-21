@@ -71,3 +71,15 @@ test("ShareFile gives view access to anyone with the link and UnshareFile makes 
     ["f2", "private", "view"],
   ]);
 });
+
+test("Range turns numeric text into numbers", () => {
+  const { Range } = load();
+  assert.deepStrictEqual(Range("1", "3"), [1, 2, 3]);
+});
+
+test("Range throws for bounds that are not finite numbers instead of never ending", () => {
+  const { Range } = load();
+  assert.throws(() => Range(1, Infinity), /finite/);
+  assert.throws(() => Range(NaN, 3), /finite/);
+  assert.throws(() => Range("a", 3), /finite/);
+});
