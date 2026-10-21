@@ -1177,7 +1177,7 @@ function WaitUntil(timeout, Test, Success, Fail = function () {
 function ExecAsync(Fn, ...all_params) {
   let Fn2 = async function () {
     try {
-      return Fn(...all_params);
+      return await Fn(...all_params);
     } catch (e) {
       console.log(e);
       return null;
