@@ -549,7 +549,10 @@ function Locker(Fn) {
 }
 
 function Lock() {
-  let n = Random(0, 10000);
+  let n = locks.findIndex(l => !l);
+  if (n === -1) {
+    n = locks.length;
+  }
   locks[n] = LockService.getScriptLock();
   locks[n].tryLock("30000");
   return n;
@@ -557,7 +560,9 @@ function Lock() {
 
 function Unlock(n) {
   SpreadsheetApp.flush();
-  locks[n].releaseLock();
+  const lock = locks[n];
+  locks[n] = null;
+  lock.releaseLock();
 }
 
 function GetCellLocation(cell) {
