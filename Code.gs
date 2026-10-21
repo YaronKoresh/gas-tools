@@ -1397,7 +1397,7 @@ function createWorker() {
         eval(deps);
         let func;
         try {
-            func = new Function('return ' + asyncFnString)(); 
+            func = eval('(' + asyncFnString + ')');
         } catch (parseError) {
             self.postMessage({ error: 'Function parsing failed: ' + parseError.message });
             return;
