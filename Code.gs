@@ -1383,7 +1383,7 @@ function SaveFile(blob, path = "/") {
 function GetObject(args) {
   var data = {};
   for (var i = 1; i < args.length; i += 2) {
-    data[args[i - 1]] = args[i];
+    Object.defineProperty(data, args[i - 1], { value: args[i], enumerable: true, writable: true, configurable: true });
   };
   return data;
 }

@@ -83,3 +83,12 @@ test("Range throws for bounds that are not finite numbers instead of never endin
   assert.throws(() => Range(NaN, 3), /finite/);
   assert.throws(() => Range("a", 3), /finite/);
 });
+
+test("GetObject keeps a __proto__ key as data and does not change the prototype", () => {
+  const { GetObject } = load();
+  const result = GetObject(["__proto__", { polluted: true }, "b", 2]);
+  assert.deepStrictEqual(Object.keys(result), ["__proto__", "b"]);
+  assert.strictEqual(Object.getPrototypeOf(result), Object.prototype);
+  assert.strictEqual(result.polluted, undefined);
+  assert.strictEqual(result.b, 2);
+});
