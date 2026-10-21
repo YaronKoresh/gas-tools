@@ -577,7 +577,8 @@ async function PhotoTemp(apiLayerApiKey) {
 }
 
 function BlobToDataUrl(blob) {
-  let dataUrl = `data:${blob.getContentType()};base64,${Utilities.base64Encode(blob.getBytes())}`;
+  const type = String(blob.getContentType() ?? "").replace(/\s+/g, "") || "application/octet-stream";
+  let dataUrl = `data:${type};base64,${Utilities.base64Encode(blob.getBytes())}`;
   return dataUrl;
 }
 
