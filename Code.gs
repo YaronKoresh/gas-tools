@@ -963,7 +963,17 @@ function ShortUrl(bitlyApiKey, bitlyGuid, url) {
 
   console.log(res.getContentText());
 
-  let obj = JSON.parse(res.getContentText());
+  let obj;
+  try {
+    obj = JSON.parse(res.getContentText());
+  } catch (e) {
+    obj = {};
+  }
+
+  if (!obj || !obj['link']) {
+    const reason = (obj && (obj['message'] || obj['description'])) || res.getContentText();
+    throw new Error(`ShortUrl failed (${res.getResponseCode()}): ${reason}`);
+  }
 
   return obj['link'];
 }
