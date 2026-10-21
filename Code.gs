@@ -563,17 +563,15 @@ function GetCellLocation(cell) {
   return `${ColumnToLetter(cell.getColumn())}${cell.getRow()}`;
 }
 
-function CurrentPhotoIntoUrl() {
-  ExportCurrentCellPhoto().then(id => {
-    ShareFile(id);
-    let p1 = ShortUrl(DriveIdToUrl(id));
-    let p2 = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getActiveCell();
-    return [p1, p2];
-  }).then((url, cell) => {
-    let l = Lock();
-    cell.setValue(url);
-    Unlock(l);
-  });
+async function CurrentPhotoIntoUrl(bitlyApiKey, bitlyGuid) {
+  let cell = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getActiveCell();
+  let id = await ExportCurrentCellPhoto();
+  ShareFile(id);
+  let url = ShortUrl(bitlyApiKey, bitlyGuid, DriveIdToUrl(id));
+  let l = Lock();
+  cell.setValue(url);
+  Unlock(l);
+  return url;
 }
 
 function OpenFile(id) {
