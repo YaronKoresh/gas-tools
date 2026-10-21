@@ -6,10 +6,11 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const domainSource = source.match(/const domain = .*;/)[0];
 const fnSource = source.match(/function FinalUrl[\s\S]*?\n}\n/)[0];
+const relativeSource = source.match(/function RelativeToAbsoluteUrl[\s\S]*?\n}\n/)[0];
 
 function load(map) {
   const UrlFetchApp = { fetch: (u) => ({ getHeaders: () => ({ Location: map[u] }) }) };
-  return new Function("UrlFetchApp", `${domainSource}${fnSource}; return FinalUrl;`)(UrlFetchApp);
+  return new Function("UrlFetchApp", `${domainSource}${relativeSource}${fnSource}; return FinalUrl;`)(UrlFetchApp);
 }
 
 test("FinalUrl follows a path-only Location", () => {
@@ -34,4 +35,27 @@ test("FinalUrl returns the url when there is no redirect", () => {
 test("FinalUrl keeps the port of the current host for a path-only Location", () => {
   const f = load({ "http://a.example.com:8080/x": "/y" });
   assert.strictEqual(f("http://a.example.com:8080/x"), "http://a.example.com:8080/y");
+});
+
+function loadWithRelative(map) {
+  const UrlFetchApp = { fetch: (u) => ({ getHeaders: () => map[u] || {} }) };
+  return new Function(
+    "UrlFetchApp",
+    `${domainSource}${relativeSource}${fnSource}; return FinalUrl;`,
+  )(UrlFetchApp);
+}
+
+test("FinalUrl follows a protocol-relative Location with the scheme of the current url", () => {
+  const f = loadWithRelative({ "https://a.example.com/x": { Location: "//cdn.example.org/y" } });
+  assert.strictEqual(f("https://a.example.com/x"), "https://cdn.example.org/y");
+});
+
+test("FinalUrl follows a Location relative to the current path", () => {
+  const f = loadWithRelative({ "https://a.example.com/dir/x": { Location: "y?q=1" } });
+  assert.strictEqual(f("https://a.example.com/dir/x"), "https://a.example.com/dir/y?q=1");
+});
+
+test("FinalUrl follows a Location header sent in lower case", () => {
+  const f = loadWithRelative({ "https://a.example.com/x": { location: "https://b.example.org/z" } });
+  assert.strictEqual(f("https://a.example.com/x"), "https://b.example.org/z");
 });

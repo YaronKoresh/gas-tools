@@ -1089,10 +1089,10 @@ function FinalUrl(url, headers = {}) {
   let redirection = null;
   function Redirect() {
     try {
-      redirection = UrlFetchApp.fetch(url, params).getHeaders()['Location'];
-      if(redirection.startsWith("/")){
-        redirection = url.match(domain)[0] + redirection
-      }
+      const responseHeaders = UrlFetchApp.fetch(url, params).getHeaders();
+      const locationKey = Object.keys(responseHeaders).find(k => k.toLowerCase() === "location");
+      const location = locationKey ? responseHeaders[locationKey] : null;
+      redirection = location ? RelativeToAbsoluteUrl(url, String(location)) : null;
     } catch (e) {
       redirection = null;
     }
