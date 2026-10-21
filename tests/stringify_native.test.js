@@ -21,7 +21,7 @@ test("Stringify writes null for a native function given on its own", () => {
 test("Stringify keeps the source of user functions", () => {
   const add = function add(a, b) { return a + b; };
   assert.strictEqual(Stringify(add), add.toString());
-  assert.strictEqual(Stringify([add]), "[" + add.toString() + "]");
+  assert.strictEqual(Stringify([add], true), "[" + add.toString() + "]");
 });
 
 test("Stringify writes null for symbols", () => {
@@ -56,4 +56,18 @@ test("Exec receives an object with a toJSON method", () => {
 test("Exec receives a method given on its own", () => {
   const obj = { twice(n) { return n * 2; } };
   assert.strictEqual(Exec("return _1(4)", obj.twice), 8);
+});
+
+test("Stringify stores nested functions as text that Parse revives", () => {
+  const text = Stringify({ add: (a, b) => a + b, nested: [function twice(n) { return n * 2; }], plain() { return 9; } });
+  assert.doesNotThrow(() => JSON.parse(text));
+  const back = Parse(text);
+  assert.strictEqual(back.add(1, 2), 3);
+  assert.strictEqual(back.nested[0](4), 8);
+  assert.strictEqual(back.plain(), 9);
+});
+
+test("Stringify keeps nested native functions as null in both modes", () => {
+  assert.strictEqual(Stringify({ f: Math.max }), '{"f":null}');
+  assert.strictEqual(Stringify({ f: Math.max }, true), '{"f":null}');
 });

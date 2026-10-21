@@ -149,7 +149,7 @@ function Flatten(arr) {
 
 function Exec(str, ...args) {
   let arr = args.map(function (arg, index) {
-    return `const _${index + 1} = ${arg === undefined ? "undefined" : Stringify(arg)}`;
+    return `const _${index + 1} = ${arg === undefined ? "undefined" : Stringify(arg, true)}`;
   });
   arr.push(str);
   return (new Function(arr.join(";")))();
@@ -951,7 +951,7 @@ function Random(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function Stringify(obj) {
+function Stringify(obj, asCode = false) {
   const FunctionSource = function (fn) {
     const text = fn.toString();
     if (/\{\s*\[native code\]\s*\}\s*$/.test(text)) {
@@ -964,6 +964,10 @@ function Stringify(obj) {
       });
     }
     return text;
+  };
+  const Nested = function (fn) {
+    const text = FunctionSource(fn);
+    return text === "null" || asCode ? text : JSON.stringify(text);
   };
   const Primitive = function (val) {
     return typeof val === "symbol" ? "null" : JSON.stringify(val);
@@ -997,13 +1001,13 @@ function Stringify(obj) {
     for (let i = 0; i < len; i++) {
       let val = obj[i];
       if (typeof val === 'function') {
-        ret += FunctionSource(val);
+        ret += Nested(val);
       } else if (val === null) {
         ret += "null";
       } else if (val === undefined) {
         ret += "null";
       } else if (typeof val === 'object') {
-        ret += Stringify(val);
+        ret += Stringify(val, asCode);
       } else {
         ret += Primitive(val);
       }
@@ -1027,11 +1031,11 @@ function Stringify(obj) {
       written++;
       ret += JSON.stringify(key) + ":";
       if (typeof val === 'function') {
-        ret += FunctionSource(val);
+        ret += Nested(val);
       } else if (val === null) {
         ret += "null";
       } else if (typeof val === 'object') {
-        ret += Stringify(val);
+        ret += Stringify(val, asCode);
       } else {
         ret += Primitive(val);
       }
@@ -1605,7 +1609,7 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
     if (typeof d === "function") {
       return Stringify(d);
     }
-    const text = Stringify(d);
+    const text = Stringify(d, true);
     return d !== null && typeof d === "object" && !Array.isArray(d) ? `Object.assign(self, ${text});` : `(${text});`;
   };
   const deps_txt = "" + allDeps.map(depSource).join("\n");

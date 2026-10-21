@@ -41,3 +41,13 @@ test("an undefined value does not block later cache reads and writes", () => {
   assert.strictEqual(ReadFromCache("n", "a"), null);
   assert.strictEqual(ReadFromCache("n", "b"), 1);
 });
+
+test("a function stored in the cache keeps the other keys of the same cache", () => {
+  const { WriteToCache, ReadFromCache } = load();
+  WriteToCache("f", "keep", 1);
+  WriteToCache("f", "fn", (x) => x + 1);
+  WriteToCache("f", "later", 2);
+  assert.strictEqual(ReadFromCache("f", "keep"), 1);
+  assert.strictEqual(ReadFromCache("f", "later"), 2);
+  assert.strictEqual(ReadFromCache("f", "fn")(1), 2);
+});
