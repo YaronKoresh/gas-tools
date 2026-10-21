@@ -954,6 +954,13 @@ function Random(min, max) {
 }
 
 function Stringify(obj) {
+  const FunctionSource = function (fn) {
+    const text = fn.toString();
+    return /\{\s*\[native code\]\s*\}\s*$/.test(text) ? "null" : text;
+  };
+  const Primitive = function (val) {
+    return typeof val === "symbol" ? "null" : JSON.stringify(val);
+  };
   let ret = "";
   let isArr = Array.isArray(obj);
   let isNull = obj === null;
@@ -971,18 +978,18 @@ function Stringify(obj) {
   } else if (isPromise) {
     throw new Error("Could not convert Promise into String!")
   } else if (isFunc) {
-    return obj.toString();
+    return FunctionSource(obj);
   } else if (isObj) {
     ret += isArr ? "[" : "{";
   } else {
-    return JSON.stringify(obj);
+    return Primitive(obj);
   }
   if (isArr) {
     let len = obj.length;
     for (let i = 0; i < len; i++) {
       let val = obj[i];
       if (typeof val === 'function') {
-        ret += val.toString().replace(/^function ([a-bA-B0-9_]){1,}\(\) \{ \[native code\] \}$/, "null");
+        ret += FunctionSource(val);
       } else if (val === null) {
         ret += "null";
       } else if (val === undefined) {
@@ -990,7 +997,7 @@ function Stringify(obj) {
       } else if (typeof val === 'object') {
         ret += Stringify(val);
       } else {
-        ret += JSON.stringify(val);
+        ret += Primitive(val);
       }
       if (i < len - 1) {
         ret += ",";
@@ -1012,13 +1019,13 @@ function Stringify(obj) {
       written++;
       ret += JSON.stringify(key) + ":";
       if (typeof val === 'function') {
-        ret += val.toString().replace(/^function ([a-bA-B0-9_]){1,}\(\) \{ \[native code\] \}$/, "null");
+        ret += FunctionSource(val);
       } else if (val === null) {
         ret += "null";
       } else if (typeof val === 'object') {
         ret += Stringify(val);
       } else {
-        ret += JSON.stringify(val);
+        ret += Primitive(val);
       }
     }
   }
