@@ -108,3 +108,13 @@ test("AddToDatabase stores the key and the value as plain text so Sheets cannot 
   assert.deepStrictEqual(formats, [["B1:B1", "@"], ["C1:C1", "@"]]);
   assert.ok(state.writes.some((w) => w[0] === "data" && w[2] === "007"));
 });
+
+test("AddToDatabase keeps the shard stamps and ids of the main sheet as plain text", () => {
+  const { AddToDatabase, state } = load();
+  AddToDatabase("db", "Logs", "k", 1);
+  const mainFormats = state.formats.filter((f) => f[0] === "main");
+  const mainWrites = state.writes.filter((w) => w[0] === "main");
+  assert.deepStrictEqual(mainFormats.map((f) => f[2]), ["@", "@"]);
+  assert.deepStrictEqual(mainFormats.map((f) => f[1]).sort(), mainWrites.map((w) => w[1]).sort());
+  assert.deepStrictEqual(mainWrites[0][2], [["21/10/2026 10:00:00"]]);
+});

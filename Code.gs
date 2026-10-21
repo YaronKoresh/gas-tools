@@ -393,11 +393,13 @@ function AddToDatabase(dbName, sheetName, key, value) {
       sec_linking_values.push(current_sec);
       sec_linking_values = sec_linking_values.filter(v => v.toString().length >= 1);
       sec_linking_col = main_sh.getRange(`A1:A${sec_linking_values.length}`);
+      sec_linking_col.setNumberFormat("@");
       sec_linking_col.setValues(sec_linking_values.map(v => [v]));
 
       ids_values.push(current_sec_id);
       ids_values = ids_values.filter(v => v.toString().length >= 1);
       ids_col = main_sh.getRange(`B1:B${ids_values.length}`);
+      ids_col.setNumberFormat("@");
       ids_col.setValues(ids_values.map(v => [v]));
 
       created_new_ss = true;
