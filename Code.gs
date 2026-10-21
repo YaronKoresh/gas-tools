@@ -618,8 +618,10 @@ function ExportPdf(sheet = null, start = "A1", end = null, options = {}) {
 
   sheet = !!sheet ? SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet) : SpreadsheetApp.getActiveSheet();
   end = end ?? ColumnToLetter(GetColumnsCount(sheet)) + GetRowsCount(sheet);
+  let startCell = ParseCellLocation(start);
+  let endCell = ParseCellLocation(end);
 
-  headers = {
+  let headers = {
     'headers': {
       'Authorization': `Bearer ${ScriptApp.getOAuthToken()}`
     }
@@ -645,10 +647,10 @@ function ExportPdf(sheet = null, start = "A1", end = null, options = {}) {
     'left_margin': 0.50,
     'right_margin': 0.50,
     'gid': sheet.getSheetId(),
-    'c1': start.slice(0, 1).charCodeAt(0) - 65,
-    'r1': start.substring(1) - 1,
-    'c2': end.slice(0, 1).charCodeAt(0) - 64,
-    'r2': end.slice(1)
+    'c1': startCell.column - 1,
+    'r1': startCell.row - 1,
+    'c2': endCell.column,
+    'r2': endCell.row
   }
 
   let options_keys = Object.keys(options);
@@ -1051,6 +1053,23 @@ function ColumnToLetter(column) {
     column = (column - temp - 1) / 26;
   }
   return letter.toUpperCase();
+}
+
+function LettersToColumn(letters) {
+  let column = 0;
+  letters = letters.toUpperCase();
+  for (let i = 0; i < letters.length; i++) {
+    column = column * 26 + (letters.charCodeAt(i) - 64);
+  }
+  return column;
+}
+
+function ParseCellLocation(location) {
+  const match = /^\s*([A-Za-z]+)(\d+)\s*$/.exec(location);
+  if (!match) {
+    throw new Error("Invalid cell location: " + location);
+  }
+  return { column: LettersToColumn(match[1]), row: +match[2] };
 }
 
 function ObjectToQueryString(obj) {
