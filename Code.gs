@@ -1818,7 +1818,24 @@ function UrlInfo(d) {
   let m2 = str.match(scripts);
   let m3 = str.match(body);
 
-  let consl = `<!DOCTYPE html><html><head>
+  const keptAttributes = tag => {
+    if(!tag){
+      return "";
+    }
+    const kept = [];
+    const found = QuoteAttributes(tag[0].replace(/^<\s*\w+/,"").replace(/\/?\s*>$/,"")).matchAll(/([-:\w]+)=("[^"]*"|'[^']*')/g);
+    for( const attribute of found ){
+      const name = attribute[1].toLowerCase();
+      if( ["dir","lang","class","id","style"].includes(name) ){
+        kept.push(name === "style" ? rewriteCssUrls(attribute[0]) : attribute[0]);
+      }
+    }
+    return kept.length === 0 ? "" : " " + kept.join(" ");
+  };
+  const htmlAttributes = keptAttributes(/<\s*html\b[^>]*>/i.exec(str));
+  const bodyAttributes = keptAttributes(m3 ? /^<\s*body\b[^>]*>/i.exec(m3[0]) : null);
+
+  let consl = `<!DOCTYPE html><html${htmlAttributes}><head>
 		<meta charset="utf8">
 		<meta name="viewport" content="width=100,height=100,initial-scale=0.1,user-scalable=1">
 		<title>Webpage duplication</title>
@@ -1941,7 +1958,7 @@ function UrlInfo(d) {
     }
   }
 
-  consl += `</head><body>`;
+  consl += `</head><body${bodyAttributes}>`;
 
   console.log("Checking M3");
   
