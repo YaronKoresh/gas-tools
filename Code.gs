@@ -1017,7 +1017,7 @@ function FinalUrl(url, headers = {}) {
     try {
       redirection = UrlFetchApp.fetch(url, params).getHeaders()['Location'];
       if(redirection.startsWith("/")){
-        redirection = url.match(urlpRegexp)[0]+redirection
+        redirection = url.match(domain)[0] + redirection
       }
     } catch (e) {
       redirection = null;
