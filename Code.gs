@@ -1693,7 +1693,7 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
 }
 
 function UrlInfo(d) {
-  const urlAttribute = /(?<=^|:)(?:(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
+  const urlAttribute = /(?<=^|:)(?:(href|ref|poster|action|formaction|data|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
   const nestedStr = /(&quot;|&#34;|&apos;|&#39;)[^&]*((?:(?!(&quot;|&#34;|&apos;|&#39;))&[^;]+)[^&]*)*(&quot;|&#34;|&apos;|&#39;)/gsm;
   const styles = /<\s*style[^<>]*>(?:(?!<\s*\/\s*style\s*>).)+<\s*\/\s*style\s*>/gsmi;
   const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*)*<\/\s*script\s*>/gsmi;
@@ -1719,7 +1719,7 @@ function UrlInfo(d) {
   url = FinalUrl(url);
   let dom = 'http://localhost:8000';
   const splitUrls = (matched, decodeQuotes) => {
-    let value = matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"");
+    let value = matched.replace(/^(href|ref|poster|action|formaction|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"");
     if(decodeQuotes){
       value = value.replaceAll(/&(quot|#34|apos|#39);/gms," ");
     }
