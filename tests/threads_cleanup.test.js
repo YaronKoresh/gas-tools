@@ -39,7 +39,7 @@ test("Threads revokes the worker url for an empty list", async () => {
 
 test("Threads stops the running workers and revokes the url on timeout", async () => {
   const { Threads, state } = load(false);
-  await assert.rejects(() => Threads(async (x) => x, [[1], [2]], [], 0, 0.05), /timed out/);
+  await assert.rejects(() => Threads(async (x) => x, [[1], [2]], [], 0, 0.3), /timed out/);
   assert.strictEqual(state.terminated, 2);
   assert.strictEqual(state.revoked, 1);
 });

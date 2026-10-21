@@ -1210,6 +1210,9 @@ function SaveUrl(url, path = "/") {
     name = url.split(/[?#]/)[0].split("/").pop() || "file";
   }
   let type = GetType(url);
+  if (type === null) {
+    throw new Error("Could not read the url: " + url);
+  }
   let bytes = ParseUrlContent(url);
   let blob = PackContent(name, type, bytes);
   let folder = DriveApp.getRootFolder();

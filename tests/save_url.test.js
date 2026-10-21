@@ -6,7 +6,7 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const fnSource = source.match(/function SaveUrl[\s\S]*?\n}\n/)[0];
 
-function load(existing = []) {
+function load(existing = [], type = "image/png") {
   const created = [];
   const mkFolder = (p) => ({
     getFoldersByName: (n) => {
@@ -22,7 +22,7 @@ function load(existing = []) {
     createFile: (b) => ({ getId: () => `in:${p || "/"} name:${b.name}` }),
   });
   const env = {
-    GetType: () => "image/png",
+    GetType: () => type,
     ParseUrlContent: () => [1],
     PackContent: (name) => ({ name }),
     DriveApp: { getRootFolder: () => mkFolder("") },
@@ -55,4 +55,10 @@ test("SaveUrl creates missing folders", () => {
 test("SaveUrl names the file after the url when the path has no name", () => {
   const { SaveUrl } = load();
   assert.strictEqual(SaveUrl("http://x/dir/y.png?v=1#t"), "in:/ name:y.png");
+});
+
+test("SaveUrl throws and creates nothing when the url cannot be read", () => {
+  const { SaveUrl, created } = load([], null);
+  assert.throws(() => SaveUrl("http://x/missing.png", "/new/c.png"), /http:\/\/x\/missing\.png/);
+  assert.deepStrictEqual(created, []);
 });
