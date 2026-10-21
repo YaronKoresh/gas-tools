@@ -1718,6 +1718,18 @@ function UrlInfo(d) {
 
   url = FinalUrl(url);
   let dom = 'http://localhost:8000';
+  const splitUrls = (matched, decodeQuotes) => {
+    let value = matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"");
+    if(decodeQuotes){
+      value = value.replaceAll(/&(quot|#34|apos|#39);/gms," ");
+    }
+    value = value.slice(1,-1).replaceAll(/(\s){2,}/gsm," ");
+    if(/^(data-)?srcset=/i.test(matched)){
+      return value.split(" ").filter(u => !/^\d+(\.\d+)?[wx],?$/i.test(u));
+    }
+    value = value.trim();
+    return value === "" ? [] : [value];
+  };
   const redirectValue = u => encodeURI(u).replaceAll("&", "%26").replaceAll("+", "%2B");
   const redirectUrl = u => `${dom}?redirect${randId}=${redirectValue(RelativeToAbsoluteUrl(url,u))}`;
   const cssSafe = text => text.replaceAll(/[()'"]/g, c => "%" + c.charCodeAt(0).toString(16));
@@ -1917,7 +1929,7 @@ function UrlInfo(d) {
           if(moreRes.length >= 1){
             x = x.replace(/^(data-)?srcset=/gms,"src=").replace(/^(data-)/gms,"");
           }
-          matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
+          splitUrls(matched, false).map((u,ind,arr) => {
             if(!u.match(/^(data|javascript|mailto|tel|sms|blob|about):/i)){
               if(ind === arr.length-1){
                 x = x.replace(/=.*/gsm,`="${dom}?redirect${randId}=${redirectValue(RelativeToAbsoluteUrl(url,u))}"`);
@@ -2012,7 +2024,7 @@ function UrlInfo(d) {
             if(moreRes.length >= 1){
               x = x.replace(/^(data-)?srcset=/gms,"src=").replace(/^(data-)/gms,"");
             }
-            matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").replaceAll(/&(quot|#34|apos|#39);/gms," ").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
+            splitUrls(matched, true).map((u,ind,arr) => {
               if(!u.match(/^(data|javascript|mailto|tel|sms|blob|about):/i)){
                 if(ind === arr.length-1){
                   x = x.replace(/=.*/gsm,`="${dom}?redirect${randId}=${redirectValue(RelativeToAbsoluteUrl(url,u))}"`);
@@ -2073,7 +2085,7 @@ function UrlInfo(d) {
             if(moreRes.length >= 1){
               x = x.replace(/^(data-)?srcset=/gms,"src=").replace(/^(data-)/gms,"");
             }
-            matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").replaceAll(/&(quot|#34|apos|#39);/gms," ").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
+            splitUrls(matched, true).map((u,ind,arr) => {
               if(!u.match(/^(data|javascript|mailto|tel|sms|blob|about):/i)){
                 if(ind === arr.length-1){
                   x = x.replace(/=.*/gsm,`="${dom}?redirect${randId}=${redirectValue(RelativeToAbsoluteUrl(url,u))}"`);
