@@ -34,6 +34,7 @@ function load(failOnPage) {
       if (id === failOnPage) throw new Error("no thumbnail");
       return "https://x/y=s220";
     },
+    LoadPdfLib: () => env.PDFLib,
     Drive: {},
     UrlFetchApp: { fetch: () => ({ getBlob: () => ({ setName() {} }) }) },
   };

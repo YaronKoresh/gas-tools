@@ -3,7 +3,13 @@ const cache = CacheService.getScriptCache();
 const uuid_charset = String.fromCodePoint(...Range(6016, 55291)).split("").filter(c => /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(c)).join("");
 
 const pdf_lib_url = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js";
-eval(UrlFetchApp.fetch(pdf_lib_url).getContentText());
+
+function LoadPdfLib() {
+  if (typeof PDFLib === "undefined") {
+    (0, eval)(UrlFetchApp.fetch(pdf_lib_url).getContentText());
+  }
+  return PDFLib;
+}
 
 let locks = [];
 
@@ -1017,13 +1023,14 @@ function TryRepeatedly(attempts, Func, ...args) {
 
 async function PdfToPng(blob) {
   const data = new Uint8Array(blob.getBytes());
-  const pdfData = await PDFLib.PDFDocument.load(data);
+  const pdfLib = LoadPdfLib();
+  const pdfData = await pdfLib.PDFDocument.load(data);
   const pageLength = pdfData.getPageCount();
   console.log(`Total pages: ${pageLength}`);
   const obj = { imageBlobs: [], fileIds: [] };
   try {
     for (let i = 0; i < pageLength; i++) {
-      const pdfDoc = await PDFLib.PDFDocument.create();
+      const pdfDoc = await pdfLib.PDFDocument.create();
       const [page] = await pdfDoc.copyPages(pdfData, [i]);
       await pdfDoc.addPage(page);
       const bytes = await pdfDoc.save();
