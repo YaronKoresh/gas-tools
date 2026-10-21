@@ -306,86 +306,87 @@ function AddToDatabase(dbName, sheetName, key, value) {
   dbName = "Database " + dbName.toString();
 
   let k = Lock();
+  try {
+    let current_sec = Now();
+    let parts = current_sec.split(/[\.\/ :]/);
+    let hr = (+parts[3]);
+    let min = (+parts[4]);
+    let sec = (+parts[5]);
+    let year = (+parts[2]);
+    let month_i = (+parts[1]) - 1;
+    let day = (+parts[0]);
+    let current_datetime = (new Date(year, month_i, day, hr, min, sec));
+    let ms = (new Date()).getTime() - current_datetime.getTime();
 
-  let current_sec = Now();
-  let parts = Now().split(/[\.\/ :]/);
-  let hr = (+parts[3]);
-  let min = (+parts[4]);
-  let sec = (+parts[5]);
-  let year = (+parts[2]);
-  let month_i = (+parts[1]) - 1;
-  let day = (+parts[0]);
-  let current_datetime = (new Date(year, month_i, day, hr, min, sec));
-  let ms = (new Date()).getTime() - current_datetime.getTime();
+    let db_file = DriveApp.getRootFolder().getFoldersByName("[DB]").next().getFilesByName(dbName).next();
+    let main_ss = SpreadsheetApp.open(db_file);
+    SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
-  let db_file = DriveApp.getRootFolder().getFoldersByName("[DB]").next().getFilesByName(dbName).next();
-  let main_ss = SpreadsheetApp.open(db_file);
-  SpreadsheetApp.setActiveSpreadsheet(main_ss);
+    let main_name = main_ss.getName();
+    let main_sh = main_ss.getSheetByName("Sheet1");
 
-  let main_name = main_ss.getName();
-  let main_sh = main_ss.getSheetByName("Sheet1");
+    let sec_linking_col = main_sh.getRange("A1:A");
+    let sec_linking_values = Flatten(sec_linking_col.getValues());
 
-  let sec_linking_col = main_sh.getRange("A1:A");
-  let sec_linking_values = Flatten(sec_linking_col.getValues());
+    let ids_col = main_sh.getRange("B1:B");
+    let ids_values = Flatten(ids_col.getValues());
 
-  let ids_col = main_sh.getRange("B1:B");
-  let ids_values = Flatten(ids_col.getValues());
+    let created_new_ss = false;
 
-  let created_new_ss = false;
+    let current_sec_ss = null;
 
-  let current_sec_ss = null;
+    let current_sheet = null;
 
-  let current_sheet = null;
+    if (!sec_linking_values.includes(current_sec)) {
 
-  if (!sec_linking_values.includes(current_sec)) {
+      current_sec_ss = SpreadsheetApp.create(main_name + " (" + current_sec + ")");
+      let current_sec_id = current_sec_ss.getId();
 
-    current_sec_ss = SpreadsheetApp.create(main_name + " (" + current_sec + ")");
-    let current_sec_id = current_sec_ss.getId();
+      DriveApp.getRootFolder().getFilesByName(main_name + " (" + current_sec + ")").next().moveTo(DriveApp.getRootFolder().getFoldersByName("[DB]").next());
 
-    DriveApp.getRootFolder().getFilesByName(main_name + " (" + current_sec + ")").next().moveTo(DriveApp.getRootFolder().getFoldersByName("[DB]").next());
+      sec_linking_values.push(current_sec);
+      sec_linking_values = sec_linking_values.filter(v => v.toString().length >= 1);
+      sec_linking_col = main_sh.getRange(`A1:A${sec_linking_values.length}`);
+      sec_linking_col.setValues(sec_linking_values.map(v => [v]));
 
-    sec_linking_values.push(current_sec);
-    sec_linking_values = sec_linking_values.filter(v => v.toString().length >= 1);
-    sec_linking_col = main_sh.getRange(`A1:A${sec_linking_values.length}`);
-    sec_linking_col.setValues(sec_linking_values.map(v => [v]));
+      ids_values.push(current_sec_id);
+      ids_values = ids_values.filter(v => v.toString().length >= 1);
+      ids_col = main_sh.getRange(`B1:B${ids_values.length}`);
+      ids_col.setValues(ids_values.map(v => [v]));
 
-    ids_values.push(current_sec_id);
-    ids_values = ids_values.filter(v => v.toString().length >= 1);
-    ids_col = main_sh.getRange(`B1:B${ids_values.length}`);
-    ids_col.setValues(ids_values.map(v => [v]));
+      created_new_ss = true;
 
-    created_new_ss = true;
+    } else {
 
-  } else {
+      ids_values = ids_values.filter(v => v.toString().length >= 1);
+      let current_sec_id = ids_values[ids_values.length - 1];
+      current_sec_ss = SpreadsheetApp.openById(current_sec_id);
+    }
 
-    ids_values = ids_values.filter(v => v.toString().length >= 1);
-    let current_sec_id = ids_values[ids_values.length - 1];
-    current_sec_ss = SpreadsheetApp.openById(current_sec_id);
-  }
-
-  if (
-    !current_sec_ss.getSheetByName(sheetName)
-  ) {
-    current_sheet = current_sec_ss.insertSheet(sheetName);
-    current_sheet.deleteColumns(4, 23);
-  } else {
-    current_sheet = current_sec_ss.getSheetByName(sheetName);
-  }
-
-  if (created_new_ss) {
-    if (sheetName === "Sheet1") {
+    if (
+      !current_sec_ss.getSheetByName(sheetName)
+    ) {
+      current_sheet = current_sec_ss.insertSheet(sheetName);
       current_sheet.deleteColumns(4, 23);
     } else {
-      current_sec_ss.deleteSheet(current_sec_ss.getSheetByName("Sheet1"));
+      current_sheet = current_sec_ss.getSheetByName(sheetName);
     }
+
+    if (created_new_ss) {
+      if (sheetName === "Sheet1") {
+        current_sheet.deleteColumns(4, 23);
+      } else {
+        current_sec_ss.deleteSheet(current_sec_ss.getSheetByName("Sheet1"));
+      }
+    }
+
+    let next_row = Unique(current_sheet.getRange(`A1:A`).getValues(), 1).length + 1;
+    current_sheet.getRange(`A${next_row}:A${next_row}`).setValue(ms.toString());
+    current_sheet.getRange(`B${next_row}:B${next_row}`).setValue(key.toString());
+    current_sheet.getRange(`C${next_row}:C${next_row}`).setValue(Stringify(value));
+  } finally {
+    Unlock(k);
   }
-
-  let next_row = Unique(current_sheet.getRange(`A1:A`).getValues(), 1).length + 1;
-  current_sheet.getRange(`A${next_row}:A${next_row}`).setValue(ms.toString());
-  current_sheet.getRange(`B${next_row}:B${next_row}`).setValue(key.toString());
-  current_sheet.getRange(`C${next_row}:C${next_row}`).setValue(Stringify(value));
-
-  Unlock(k);
 
   function Unique(arr, min_length = 0) {
     return [...new Set(arr.map(v => v[0]).filter(v => v.toString().length >= min_length))];
