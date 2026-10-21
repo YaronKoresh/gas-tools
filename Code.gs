@@ -81,7 +81,7 @@ function WriteToCache(name, key, value, time = 21600) {
   } catch (e) {
     obj = {};
   }
-  obj[key] = value;
+  Object.defineProperty(obj, key, { value: value, enumerable: true, writable: true, configurable: true });
   cache.put(name, Stringify(obj), time);
 }
 
@@ -92,7 +92,7 @@ function ReadFromCache(name, key) {
   }
   try {
     const stored = Parse(text);
-    return stored !== null && typeof stored === "object" ? stored[key] ?? null : null;
+    return stored !== null && typeof stored === "object" && Object.prototype.hasOwnProperty.call(stored, key) ? stored[key] ?? null : null;
   } catch (e) {
     return null;
   }

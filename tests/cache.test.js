@@ -54,3 +54,21 @@ test("ReadFromCache returns null for an entry that is not valid json", () => {
   const { ReadFromCache } = load({ n: "garbage" });
   assert.strictEqual(ReadFromCache("n", "k"), null);
 });
+
+test("ReadFromCache returns null for a key that only exists on Object.prototype", () => {
+  const { WriteToCache, ReadFromCache } = load();
+  WriteToCache("n", "a", 1);
+  for (const key of ["constructor", "toString", "hasOwnProperty", "__proto__"]) {
+    assert.strictEqual(ReadFromCache("n", key), null, key);
+  }
+});
+
+test("WriteToCache stores a key called __proto__ as data", () => {
+  const { WriteToCache, ReadFromCache, store } = load();
+  WriteToCache("n", "__proto__", { polluted: true });
+  WriteToCache("n", "b", 2);
+  assert.deepStrictEqual(ReadFromCache("n", "__proto__"), { polluted: true });
+  assert.strictEqual(ReadFromCache("n", "b"), 2);
+  assert.strictEqual(({}).polluted, undefined);
+  assert.ok(store.n.includes('"__proto__"'));
+});
