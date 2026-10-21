@@ -1250,8 +1250,8 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
     arr = [...arr];
   }
 
-  deps.push(Parse);
-  deps_txt = "" + [...deps.map(d => typeof d === "function" ? d.toString() : Stringify(d) )].join("\n");
+  const allDeps = [...deps, Parse];
+  const deps_txt = "" + allDeps.map(d => typeof d === "function" ? d.toString() : Stringify(d)).join("\n");
 
   const results = new Array(arr.length);
   let completedWorkers = 0;
