@@ -1602,7 +1602,14 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
   }
 
   const allDeps = [...deps, Parse];
-  const deps_txt = "" + allDeps.map(d => typeof d === "function" ? d.toString() : Stringify(d)).join("\n");
+  const depSource = function (d) {
+    if (typeof d === "function") {
+      return Stringify(d);
+    }
+    const text = Stringify(d);
+    return d !== null && typeof d === "object" && !Array.isArray(d) ? `Object.assign(self, ${text});` : `(${text});`;
+  };
+  const deps_txt = "" + allDeps.map(depSource).join("\n");
 
   const results = new Array(arr.length);
   let completedWorkers = 0;
