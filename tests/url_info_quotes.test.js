@@ -93,3 +93,23 @@ test("escaped markup in an attribute value is not turned into a tag", () => {
   assert.ok(out.includes("<p>y</p>"), out);
   assert.ok(!out.includes("<b>"), out);
 });
+
+test("spaces around inline elements are kept so words do not stick together", () => {
+  const out = run(page("<p>Hello <b>big</b> <i>world</i> again</p>"));
+  assert.ok(out.includes("<p>Hello <b>big</b> <i>world</i> again</p>"), out);
+});
+
+test("a space between two links is kept", () => {
+  const out = run(page("<p><a>x</a> <a>y</a></p>"));
+  assert.ok(out.includes("<p><a>x</a> <a>y</a></p>"), out);
+});
+
+test("text inside pre keeps its line breaks and indentation", () => {
+  const out = run(page("<pre>  a\n    b</pre><p>after text</p>"));
+  assert.ok(out.includes("<pre>  a\n    b</pre><p>after text</p>"), out);
+});
+
+test("text after a pre block is trimmed again", () => {
+  const out = run(page("<pre>x</pre><p>  spaced  </p>"));
+  assert.ok(out.includes("<p> spaced </p>"), out);
+});

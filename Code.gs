@@ -1782,13 +1782,17 @@ function UrlInfo(d) {
     m3 = m3[0].trim().replace(bodyTags,"");
     let coms = m3.match(tagsComponents);
     let lastWasScript = false;
+    let rawDepth = 0;
     let tagsLifo = [];
     console.log(`Calculating M3 (${coms.length} steps)`);
     for(let i = 0 ; i < coms.length ; i++){
       //console.log(`Appending M3 [${i+1}/${coms.length}]`);
-      let c = coms[i].trim();
+      const raw = coms[i];
+      let c = raw.trim();
       if(c === ""){
-        //console.log(`M3 [${i+1}/${coms.length}] is empty!`);
+        if(raw !== "" && !lastWasScript){
+          consl += rawDepth > 0 ? raw : " ";
+        }
         continue;
       }
       //console.log(`M3 (step ${i+1})\n${c}`);
@@ -1839,6 +1843,9 @@ function UrlInfo(d) {
           ...an.filter(x => x.length >= 1).map(x => x+'=""')
         ];
         tagsLifo.push(n);
+        if("pre" === n || "textarea" === n){
+          rawDepth++;
+        }
         consl += l + (n + " " + ax.map(x=>x.trim()).filter(x => x.length >= 4).join(" ")).trim() + r;
       } else if(c.match(closeTag)){
         let l = c.match(tagLeft)[0];
@@ -1846,6 +1853,9 @@ function UrlInfo(d) {
         if("script" === n){
           lastWasScript = false;
           continue;
+        }
+        if(("pre" === n || "textarea" === n) && rawDepth > 0){
+          rawDepth--;
         }
         if(tagsLifo.length >= 1){
           let topStack = tagsLifo.pop();
@@ -1897,7 +1907,7 @@ function UrlInfo(d) {
       } else if(lastWasScript){
         continue;
       } else {
-        consl += c.trim();
+        consl += rawDepth > 0 ? raw : (/^\s/.test(raw) ? " " : "") + c + (/\s$/.test(raw) ? " " : "");
       }
       //console.log(`Appending M3 [${i+1}/${coms.length}]`);
     }
