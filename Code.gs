@@ -394,7 +394,9 @@ function AddToDatabase(dbName, sheetName, key, value) {
 async function PhotoDataUrl() {
 
   let lock = LockService.getDocumentLock();
-  lock.tryLock("30000");
+  if (!lock.tryLock("30000")) {
+    throw new Error("Could not acquire the document lock within 30 seconds!");
+  }
   try {
     let headers = {
       'headers': {
@@ -553,7 +555,9 @@ function OptimizePhotoId(id, px = 120) {
 
 function Locker(Fn) {
   let lock = LockService.getScriptLock();
-  lock.tryLock("30000");
+  if (!lock.tryLock("30000")) {
+    throw new Error("Could not acquire the script lock within 30 seconds!");
+  }
 
   try {
     return Fn();
@@ -571,8 +575,11 @@ function Lock() {
   if (n === -1) {
     n = locks.length;
   }
-  locks[n] = LockService.getScriptLock();
-  locks[n].tryLock("30000");
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock("30000")) {
+    throw new Error("Could not acquire the script lock within 30 seconds!");
+  }
+  locks[n] = lock;
   return n;
 }
 

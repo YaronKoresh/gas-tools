@@ -9,7 +9,7 @@ const fnSource = source.match(/async function PhotoDataUrl[\s\S]*?\n}\n/)[0];
 function load({ type = "image/png", exportThrows = false } = {}) {
   const state = { released: 0 };
   const env = {
-    LockService: { getDocumentLock: () => ({ tryLock() {}, releaseLock: () => state.released++ }) },
+    LockService: { getDocumentLock: () => ({ tryLock: () => true, releaseLock: () => state.released++ }) },
     ScriptApp: { getOAuthToken: () => "tok" },
     ExportCurrentCellPhoto: async () => {
       if (exportThrows) throw new Error("export failed");

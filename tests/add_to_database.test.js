@@ -29,7 +29,7 @@ function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
     getFilesByName: () => ({ next: () => ({ moveTo() {} }) }),
   };
   const env = {
-    LockService: { getScriptLock: () => ({ tryLock() {}, releaseLock: () => state.released++ }) },
+    LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => state.released++ }) },
     SpreadsheetApp: {
       flush() {},
       open: () => mainSs,

@@ -11,7 +11,7 @@ function load() {
   const env = {
     LockService: {
       getScriptLock: () => {
-        const lock = { id: created.length, released: 0, tryLock() {}, releaseLock() { this.released++; } };
+        const lock = { id: created.length, released: 0, tryLock: () => true, releaseLock() { this.released++; } };
         created.push(lock);
         return lock;
       },

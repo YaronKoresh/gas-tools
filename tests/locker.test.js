@@ -9,7 +9,7 @@ const fnSource = source.match(/function Locker[\s\S]*?\n}\n/)[0];
 function load() {
   const state = { released: 0, flushed: 0 };
   const env = {
-    LockService: { getScriptLock: () => ({ tryLock() {}, releaseLock: () => state.released++ }) },
+    LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => state.released++ }) },
     SpreadsheetApp: { flush: () => state.flushed++ },
   };
   const Locker = new Function(...Object.keys(env), `${fnSource}; return Locker;`)(...Object.values(env));

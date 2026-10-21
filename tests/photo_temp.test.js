@@ -19,7 +19,7 @@ function run(reply = { code: 200, body: '{"image_url":"http://x/y.png"}' }) {
       getActiveSpreadsheet: () => ({ getActiveSheet: () => ({ getActiveCell: () => cell }) }),
       flush() {},
     },
-    LockService: { getScriptLock: () => ({ tryLock() {}, releaseLock: () => state.released++ }) },
+    LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => state.released++ }) },
     Random: () => 7,
     locks: [],
   };
