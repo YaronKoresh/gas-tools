@@ -1748,7 +1748,7 @@ function UrlInfo(d) {
 
   console.log("Generating HTML for cloning...");
 
-  str = str.replaceAll(/<!--[\s\S]*?(-->|$)/g,"");
+  str = str.replaceAll(/(<\s*(script|style|textarea)\b[^>]*>[\s\S]*?<\s*\/\s*\2\s*>)|<!--[\s\S]*?(-->|$)/gi, (all, rawBlock) => rawBlock ? rawBlock : "");
 
   const baseTag = /<\s*base\b[^>]*?\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(str);
   const baseHref = baseTag ? (baseTag[1] ?? baseTag[2] ?? baseTag[3]).trim() : "";
