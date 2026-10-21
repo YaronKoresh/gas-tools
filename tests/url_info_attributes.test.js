@@ -73,3 +73,21 @@ test("an upper case script tag is kept in the head", () => {
   const out = run('<html><head><SCRIPT SRC="/a.js"></SCRIPT></head><body>x</body></html>');
   assert.ok(out.includes('<script src="http://localhost:8000?R=ABS/a.js"></script>'), out);
 });
+
+test("relative url() in a style block is sent through the redirect", () => {
+  const out = run('<html><head><style>body{background:url(/bg.png)} a{background:url("x/y.png")} @import "more.css"; i{background:url(data:image/png;base64,AAA=)}</style></head><body>x</body></html>');
+  assert.ok(out.includes("url(http://localhost:8000?R=ABS/bg.png)"), out);
+  assert.ok(out.includes('url("http://localhost:8000?R=ABSx/y.png")'), out);
+  assert.ok(out.includes('@import "http://localhost:8000?R=ABSmore.css"'), out);
+  assert.ok(out.includes("url(data:image/png;base64,AAA=)"), out);
+});
+
+test("relative url() in a style attribute is sent through the redirect", () => {
+  const out = run(page('<div style="background:url(/a.png);color:red">x</div>'));
+  assert.ok(out.includes('<div style="background:url(http://localhost:8000?R=ABS/a.png);color:red">x</div>'), out);
+});
+
+test("a style attribute without a url is left alone", () => {
+  const out = run(page('<div style="color:red">x</div>'));
+  assert.ok(out.includes('<div style="color:red">x</div>'), out);
+});

@@ -1553,6 +1553,11 @@ function UrlInfo(d) {
 
   url = FinalUrl(url);
   let dom = 'http://localhost:8000';
+  const redirectUrl = u => `${dom}?redirect${randId}=${encodeURI(RelativeToAbsoluteUrl(url,u))}`;
+  const cssSafe = text => text.replaceAll(/[()'"]/g, c => "%" + c.charCodeAt(0).toString(16));
+  const rewriteCssUrls = css => css
+    .replaceAll(/url\(\s*(['"]?)([^'")]+?)\1\s*\)/gi, (all, quote, u) => /^(data|javascript|#)/i.test(u.trim()) ? all : `url(${quote}${cssSafe(redirectUrl(u.trim()))}${quote})`)
+    .replaceAll(/@import\s+(['"])([^'"]+)\1/gi, (all, quote, u) => `@import ${quote}${cssSafe(redirectUrl(u.trim()))}${quote}`);
   let b = new Uint8Array(GetSync(url).getContent());
   let str = Utilities.newBlob(b).getDataAsString().replaceAll("&amp;","&").trim();
   if(!/<\s*body[\s>]/i.test(str)){
@@ -1684,7 +1689,7 @@ function UrlInfo(d) {
     console.log(`Calculating M1 (${m1.length} steps)`);
     consl += "<style>";
     m1.forEach(function(css){
-      consl += `${css.trim().replaceAll(/<(\/)?style([^<>])*>/gsmi,"")}\n`;
+      consl += `${rewriteCssUrls(css.trim().replaceAll(/<(\/)?style([^<>])*>/gsmi,""))}\n`;
     });
     console.log(`Appending M1 (${m1.length} steps)`);
     consl = consl.trim() + "</style>";
@@ -1800,6 +1805,7 @@ function UrlInfo(d) {
         ay.map(x =>{
           an = an.replace(x,"");
         });
+        ay = ay.map(x => /^style=/i.test(x) ? rewriteCssUrls(x) : x);
         let moreRes = ay.filter(_ => _.match(/^(data-)?srcset=/gms));
         ay = [...ay].map(x => {
           let matched = x.match(urlAttribute);
@@ -1854,6 +1860,7 @@ function UrlInfo(d) {
         ay.map(x =>{
           an = an.replace(x,"");
         });
+        ay = ay.map(x => /^style=/i.test(x) ? rewriteCssUrls(x) : x);
         let moreRes = ay.filter(_ => _.match(/^(data-)?srcset=/gms));
         ay = [...ay].map(x => {
           let matched = x.match(urlAttribute);
