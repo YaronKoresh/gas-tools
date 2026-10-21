@@ -985,6 +985,8 @@ function Stringify(obj, asCode = false) {
     return "null";
   } else if (isUndefined) {
     return "null";
+  } else if (isDate && asCode) {
+    return isNaN(obj.getTime()) ? "new Date(NaN)" : `new Date(${JSON.stringify(obj.toISOString())})`;
   } else if (isDate || isBoxed) {
     return JSON.stringify(obj);
   } else if (isPromise) {

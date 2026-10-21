@@ -71,3 +71,16 @@ test("Stringify keeps nested native functions as null in both modes", () => {
   assert.strictEqual(Stringify({ f: Math.max }), '{"f":null}');
   assert.strictEqual(Stringify({ f: Math.max }, true), '{"f":null}');
 });
+
+test("Exec receives a Date as a Date, also inside objects and arrays", () => {
+  const d = new Date("2026-01-02T03:04:05Z");
+  assert.strictEqual(Exec("return _1.getTime()", d), d.getTime());
+  assert.strictEqual(Exec("return _1.when.getTime() + _1.list[0].getTime()", { when: d, list: [d] }), d.getTime() * 2);
+  assert.ok(Number.isNaN(Exec("return _1.getTime()", new Date(NaN))));
+});
+
+test("Stringify without the code flag still stores a Date as an ISO string", () => {
+  const d = new Date("2026-01-02T03:04:05Z");
+  assert.strictEqual(Stringify(d), '"2026-01-02T03:04:05.000Z"');
+  assert.strictEqual(Stringify({ when: d }), '{"when":"2026-01-02T03:04:05.000Z"}');
+});
