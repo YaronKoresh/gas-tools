@@ -1404,7 +1404,7 @@ function createWorker() {
         }
 
         try {
-            const result = await func(...data);
+            const result = await func(...(Array.isArray(data) ? data : [data]));
             self.postMessage({ result: result });
         } catch (execError) {
             self.postMessage({ error: 'Function execution failed: ' + execError.message });

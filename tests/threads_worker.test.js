@@ -47,3 +47,9 @@ test("the worker reports an error thrown by the function", async () => {
   await self.onmessage({ data: { asyncFnString: "async () => { throw new Error('bad'); }", deps: "", data: [] } });
   assert.match(self.posted[0].error, /Function execution failed: bad/);
 });
+
+test("the worker passes a single non-array item as the only argument", async () => {
+  const self = startWorker();
+  await self.onmessage({ data: { asyncFnString: "async (x) => x * 10", deps: "", data: 4 } });
+  assert.deepStrictEqual(self.posted, [{ result: 40 }]);
+});
