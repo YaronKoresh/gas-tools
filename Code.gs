@@ -1197,7 +1197,7 @@ function LettersToColumn(letters) {
 
 function ParseCellLocation(location) {
   const match = /^\s*([A-Za-z]+)(\d+)\s*$/.exec(location);
-  if (!match) {
+  if (!match || +match[2] < 1) {
     throw new Error("Invalid cell location: " + location);
   }
   return { column: LettersToColumn(match[1]), row: +match[2] };
