@@ -1504,10 +1504,10 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
 function UrlInfo(d) {
   const urlAttribute = /(href|ref|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+'))/gsm;
   const nestedStr = /(&quot;|&#34;|&apos;|&#39;)[^&]*((?:(?!(&quot;|&#34;|&apos;|&#39;))&[^;]+)[^&]*)*(&quot;|&#34;|&apos;|&#39;)/gsm;
-  const styles = /<\s*style[^<>]*>(?:(?!<\s*\/\s*style\s*>).)+<\s*\/\s*style\s*>/gsm;
-  const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*)*<\/\s*script\s*>/gsm;
-  const body = /<\s*body[^>]*>.+<\s*\/\s*body\s*>/gsm;
-  const bodyTags = /<\s*body[^>]*>|<\s*\/\s*body\s*>/gsm
+  const styles = /<\s*style[^<>]*>(?:(?!<\s*\/\s*style\s*>).)+<\s*\/\s*style\s*>/gsmi;
+  const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*)*<\/\s*script\s*>/gsmi;
+  const body = /<\s*body[^>]*>.+<\s*\/\s*body\s*>/gsmi;
+  const bodyTags = /<\s*body[^>]*>|<\s*\/\s*body\s*>/gsmi
   const openTag = /<\s*\w+[^<>]*>/gsm;
   const biTag = /<(?:(?!(\/\s*)?>).)+\/\s*>/gsm;
   const closeTag = /<\s*\/\s*\w+\s*>/gsm;
@@ -1540,7 +1540,7 @@ function UrlInfo(d) {
     const htmlEnd = str.search(/<\s*\/\s*html\s*>\s*$/i);
     str = htmlEnd === -1 ? str + "</body>" : str.slice(0,htmlEnd) + "</body>" + str.slice(htmlEnd);
   }
-  let tester = str.replaceAll(/\s*/gsm,"");
+  let tester = str.replaceAll(/\s*/gsm,"").toLowerCase();
   if(!tester.endsWith(`</html>`)){
     if( str.match(body) ){
       str += `</html>`;
@@ -1658,7 +1658,7 @@ function UrlInfo(d) {
     console.log(`Calculating M1 (${m1.length} steps)`);
     consl += "<style>";
     m1.forEach(function(css){
-      consl += `${css.trim().replaceAll(/<(\/)?style([^<>])*>/gsm,"")}\n`;
+      consl += `${css.trim().replaceAll(/<(\/)?style([^<>])*>/gsmi,"")}\n`;
     });
     console.log(`Appending M1 (${m1.length} steps)`);
     consl = consl.trim() + "</style>";
@@ -1675,8 +1675,8 @@ function UrlInfo(d) {
       open = open[0];
       let l = open.match(tagLeft)[0];
       let r = open.match(tagRight)[0];
-      let n = open.replace(l,"").match(/\w+/gsm)[0];
-      let a = QuoteAttributes(open.replace(l,"").replace(r,"").replace(n,"").trim());
+      let n = open.replace(l,"").match(/\w+/gsm)[0].toLowerCase();
+      let a = QuoteAttributes(open.replace(l,"").replace(r,"").slice(n.length).trim());
       let ay = [...(a.match(/\s*[-:\w]+=(('[^']*')|("[^"]*"))/gsm) ?? [])].map( x => {
         return x.trim();
       });
@@ -1758,7 +1758,7 @@ function UrlInfo(d) {
       if(c.match(openTag)){
         let l = c.match(tagLeft)[0];
         let r = c.match(tagRight)[0];
-        let n = c.replace(l,"").match(/\w+/gsm)[0];
+        let n = c.replace(l,"").match(/\w+/gsm)[0].toLowerCase();
         if("link" === n){
           continue;
         }
@@ -1766,7 +1766,7 @@ function UrlInfo(d) {
           lastWasScript = true;
           continue;
         }
-        let a = QuoteAttributes(c.replace(l,"").replace(r,"").replace(n,"").trim());
+        let a = QuoteAttributes(c.replace(l,"").replace(r,"").slice(n.length).trim());
         let ay = [...(a.match(/\s*[-:\w]+=(('[^']*')|("[^"]*"))/gsm) ?? [])].map( x => {
           return x.trim();
         });
@@ -1804,7 +1804,7 @@ function UrlInfo(d) {
         consl += l + (n + " " + ax.map(x=>x.trim()).filter(x => x.length >= 4).join(" ")).trim() + r;
       } else if(c.match(closeTag)){
         let l = c.match(tagLeft)[0];
-        let n = c.replace(l,"").match(/\w+/gsm)[0];
+        let n = c.replace(l,"").match(/\w+/gsm)[0].toLowerCase();
         if("script" === n){
           lastWasScript = false;
           continue;
@@ -1819,8 +1819,8 @@ function UrlInfo(d) {
       } else if(c.match(biTag)){
         let l = c.match(tagLeft)[0];
         let r = c.match(tagRight)[0];
-        let n = c.replace(l,"").match(/\w+/gsm)[0];
-        let a = QuoteAttributes(c.replace(l,"").replace(r,"").replace(n,"").trim());
+        let n = c.replace(l,"").match(/\w+/gsm)[0].toLowerCase();
+        let a = QuoteAttributes(c.replace(l,"").replace(r,"").slice(n.length).trim());
         let ay = [...(a.match(/\s*[-:\w]+=(('[^']*')|("[^"]*"))/gsm) ?? [])].map( x => {
           return x.trim();
         });

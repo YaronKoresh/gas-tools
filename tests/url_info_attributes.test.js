@@ -60,3 +60,16 @@ test("an unquoted link in the head is rewritten", () => {
   const out = run("<html><head><link rel=stylesheet href=/a.css></head><body><p>x</p></body></html>");
   assert.ok(out.includes('<link rel="stylesheet" href="http://localhost:8000?R=ABS/a.css">'), out);
 });
+
+test("a page written in upper case keeps its style, link, meta and body", () => {
+  const out = run('<HTML><HEAD><TITLE>t</TITLE><STYLE>p{color:red}</STYLE><LINK REL="stylesheet" HREF="/a.css"><META NAME="x" CONTENT="/y"></HEAD><BODY><P>hi</P></BODY></HTML>');
+  assert.match(out, /<style>p\{color:red\}<\/style>/);
+  assert.ok(out.includes('<link rel="stylesheet" href="http://localhost:8000?R=ABS/a.css">'), out);
+  assert.ok(out.includes('<meta name="x" content="http://localhost:8000?R=ABS/y">'), out);
+  assert.ok(out.includes("<body><p>hi</p></body></html>"), out);
+});
+
+test("an upper case script tag is kept in the head", () => {
+  const out = run('<html><head><SCRIPT SRC="/a.js"></SCRIPT></head><body>x</body></html>');
+  assert.ok(out.includes('<script src="http://localhost:8000?R=ABS/a.js"></script>'), out);
+});
