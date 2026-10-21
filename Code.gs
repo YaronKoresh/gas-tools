@@ -1914,6 +1914,10 @@ function UrlInfo(d) {
       let ay = [...(a.match(/\s*[-:\w]+=(('[^']*')|("[^"]*"))/gsm) ?? [])].map( x => {
         return x.trim();
       });
+      if(n === "meta" && ay.some(x => /^http-equiv\s*=\s*(["'])refresh\1$/i.test(x))){
+        m2[i] = "";
+        continue;
+      }
       let an = a;
       ay.map(x =>{
         an = an.replace(x,"");
