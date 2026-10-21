@@ -588,15 +588,26 @@ function Locker(Fn) {
     throw new Error("Could not acquire the script lock within 30 seconds!");
   }
 
-  try {
-    return Fn();
-  } finally {
+  const release = function () {
     try {
       SpreadsheetApp.flush();
     } finally {
       lock.releaseLock();
     }
+  };
+
+  let result;
+  try {
+    result = Fn();
+  } catch (e) {
+    release();
+    throw e;
   }
+  if (result && typeof result.then === "function") {
+    return Promise.resolve(result).finally(release);
+  }
+  release();
+  return result;
 }
 
 function Lock() {

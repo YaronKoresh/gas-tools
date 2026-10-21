@@ -33,3 +33,20 @@ test("Locker releases the lock and rethrows when the function throws", () => {
   );
   assert.deepStrictEqual(state, { released: 1, flushed: 1 });
 });
+
+test("Locker keeps the lock until an async function settles", async () => {
+  const { Locker, state } = load();
+  let finish;
+  const pending = new Promise((resolve) => (finish = resolve));
+  const result = Locker(() => pending.then(() => "done"));
+  assert.strictEqual(state.released, 0);
+  finish();
+  assert.strictEqual(await result, "done");
+  assert.deepStrictEqual(state, { released: 1, flushed: 1 });
+});
+
+test("Locker releases the lock when an async function rejects", async () => {
+  const { Locker, state } = load();
+  await assert.rejects(() => Locker(async () => { throw new Error("late boom"); }), /late boom/);
+  assert.deepStrictEqual(state, { released: 1, flushed: 1 });
+});
