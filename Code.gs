@@ -1,4 +1,4 @@
-const domain = /(([A-Za-z]+:)?\/\/)?(\w[-\w]+\w|\w+)(\.(\w[-\w]+\w|\w+))+(:\d+)?/gsm;
+const domain = /^(?:(?:[A-Za-z][A-Za-z0-9+.\-]*:)?\/\/)?[^\/?#]*/;
 const cache = CacheService.getScriptCache();
 const uuid_charset = String.fromCodePoint(...Range(6016, 55291)).split("").filter(c => /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(c)).join("");
 
@@ -1803,7 +1803,7 @@ function RelativeToAbsoluteUrl(url, rel) {
     return internalUrl;
   }
   let dom = url.match(domain)[0];
-  let scheme = (dom.match(/^[A-Za-z][A-Za-z0-9+.\-]*:/) || ["http:"])[0];
+  let scheme = (dom.match(/^[A-Za-z][A-Za-z0-9+.\-]*:(?=\/\/)/) || ["http:"])[0];
   if (internalUrl.startsWith("//")) {
     return scheme + internalUrl;
   }

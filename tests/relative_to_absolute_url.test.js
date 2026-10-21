@@ -36,3 +36,17 @@ for (const [base, rel, expected] of cases) {
     assert.strictEqual(resolve(base, rel), expected);
   });
 }
+
+const hostCases = [
+  ["http://localhost:8000/a/b", "c.js", "http://localhost:8000/a/c.js"],
+  ["http://[::1]:80/x/y", "c.js", "http://[::1]:80/x/c.js"],
+  ["http://intranet/dir/page", "/img.png", "http://intranet/img.png"],
+  ["https://u:p@example.com/a/b", "c.js", "https://u:p@example.com/a/c.js"],
+  ["example.com/a/b", "c.js", "example.com/a/c.js"],
+  ["http://localhost/a", "//cdn.com/x.js", "http://cdn.com/x.js"],
+];
+for (const [base, rel, want] of hostCases) {
+  test(`resolves ${rel} against ${base} for hosts without a dot or with user info`, () => {
+    assert.strictEqual(resolve(base, rel), want);
+  });
+}
