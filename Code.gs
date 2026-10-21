@@ -442,6 +442,7 @@ async function ExportCurrentCellPhoto() {
   let pdfId = ExportPdf(GetActiveSheetName(), cellLoc, cellLoc, {
     fzr: false,
     size: "2x2",
+    top_margin: 0,
     bottom_margin: 0,
     left_margin: 0,
     right_margin: 0,
@@ -459,7 +460,15 @@ async function ExportCurrentCellPhoto() {
 }
 
 async function ExportCellPhoto(sheet, locat) {
-  let pdfId = ExportPdf(sheet, locat, locat);
+  let pdfId = ExportPdf(sheet, locat, locat, {
+    fzr: false,
+    size: "2x2",
+    top_margin: 0,
+    bottom_margin: 0,
+    left_margin: 0,
+    right_margin: 0,
+    pagenum: false
+  });
 
   let pdf = DriveApp.getFileById(pdfId);
   try {
