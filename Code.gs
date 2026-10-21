@@ -1269,21 +1269,22 @@ function ParseCellLocation(location) {
 
 function ObjectToQueryString(obj) {
   const pairs = [];
-  Object.keys(obj).forEach(function (key) {
-    const value = obj[key];
+  const add = function (name, value) {
     if (value === undefined || value === null) {
       return;
     }
-    if (typeof value === "object") {
+    if (value instanceof Date) {
+      pairs.push(`${name}=${encodeURIComponent(value.toISOString())}`);
+    } else if (typeof value === "object") {
       Object.keys(value).forEach(function (k) {
-        if (value[k] === undefined || value[k] === null) {
-          return;
-        }
-        pairs.push(`${encodeURIComponent(key)}%5B${encodeURIComponent(k)}%5D=${encodeURIComponent(value[k])}`);
+        add(`${name}%5B${encodeURIComponent(k)}%5D`, value[k]);
       });
     } else {
-      pairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+      pairs.push(`${name}=${encodeURIComponent(value)}`);
     }
+  };
+  Object.keys(obj).forEach(function (key) {
+    add(encodeURIComponent(key), obj[key]);
   });
   return pairs.join("&");
 }
