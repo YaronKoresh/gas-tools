@@ -778,7 +778,7 @@ function Alert(msg) {
 }
 
 function Uuid(len) {
-  charset = uuid_charset.split("");
+  const charset = uuid_charset.split("");
   len = Math.max(1, len);
   let ret = charset[Random(0, charset.length - 1)];
   for (let i = 0; i < len - 1; i++) {
@@ -788,9 +788,14 @@ function Uuid(len) {
 }
 
 function Random(min, max) {
-  const int = parseInt(Math.random().toString().replace(".", ""));
-  const dif = max - min;
-  return (int % dif) + min;
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  if (min > max) {
+    const tmp = min;
+    min = max;
+    max = tmp;
+  }
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function Stringify(obj) {
