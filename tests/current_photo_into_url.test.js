@@ -6,15 +6,17 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const fnSource = source.match(/async function CurrentPhotoIntoUrl[\s\S]*?\n}\n/)[0];
 
-function load() {
-  const state = { set: [], short: [], unlocked: [] };
+function load(shortFails = false) {
+  const state = { set: [], short: [], unlocked: [], trashed: [] };
   const cell = { setValue: (v) => state.set.push(v) };
   const env = {
     ExportCurrentCellPhoto: async () => "img",
     ShareFile() {},
+    TrashFile: (id) => state.trashed.push(id),
     DriveIdToUrl: (id) => `url:${id}`,
     ShortUrl: (...a) => {
       state.short.push(a);
+      if (shortFails) throw new Error("bitly down");
       return "short";
     },
     SpreadsheetApp: { getActiveSpreadsheet: () => ({ getActiveSheet: () => ({ getActiveCell: () => cell }) }) },
@@ -36,4 +38,17 @@ test("CurrentPhotoIntoUrl writes the short url into the cell and unlocks", async
   assert.strictEqual(await fn("key", "guid"), "short");
   assert.deepStrictEqual(state.set, ["short"]);
   assert.deepStrictEqual(state.unlocked, [42]);
+});
+
+test("CurrentPhotoIntoUrl trashes the shared image when the short url cannot be made", async () => {
+  const { fn, state } = load(true);
+  await assert.rejects(() => fn("key", "guid"), /bitly down/);
+  assert.deepStrictEqual(state.trashed, ["img"]);
+  assert.deepStrictEqual(state.set, []);
+});
+
+test("CurrentPhotoIntoUrl keeps the shared image when the short url was made", async () => {
+  const { fn, state } = load();
+  await fn("key", "guid");
+  assert.deepStrictEqual(state.trashed, []);
 });

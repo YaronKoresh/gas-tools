@@ -677,8 +677,14 @@ function GetCellLocation(cell) {
 async function CurrentPhotoIntoUrl(bitlyApiKey, bitlyGuid) {
   let cell = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getActiveCell();
   let id = await ExportCurrentCellPhoto();
-  ShareFile(id);
-  let url = ShortUrl(bitlyApiKey, bitlyGuid, DriveIdToUrl(id));
+  let url;
+  try {
+    ShareFile(id);
+    url = ShortUrl(bitlyApiKey, bitlyGuid, DriveIdToUrl(id));
+  } catch (e) {
+    TrashFile(id);
+    throw e;
+  }
   let l = Lock();
   try {
     cell.setValue(url);
