@@ -539,12 +539,15 @@ function Locker(Fn) {
   let lock = LockService.getScriptLock();
   lock.tryLock("30000");
 
-  let ret = Fn();
-
-  SpreadsheetApp.flush();
-  lock.releaseLock();
-
-  return ret;
+  try {
+    return Fn();
+  } finally {
+    try {
+      SpreadsheetApp.flush();
+    } finally {
+      lock.releaseLock();
+    }
+  }
 }
 
 function Lock() {
