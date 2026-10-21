@@ -33,3 +33,13 @@ test("DriveUrlToId round-trips DriveIdToUrl", () => {
 test("DriveUrlToId returns a plain id unchanged", () => {
   assert.strictEqual(DriveUrlToId(id), id);
 });
+
+for (const url of [
+  `https://drive.google.com/drive/folders/${id}`,
+  `https://drive.google.com/drive/folders/${id}?usp=sharing`,
+  `https://drive.google.com/drive/u/0/folders/${id}`,
+]) {
+  test(`DriveUrlToId reads the folder link ${url}`, () => {
+    assert.strictEqual(DriveUrlToId(url), id);
+  });
+}

@@ -1168,7 +1168,7 @@ function ParseIdContent(id) {
 }
 
 function DriveUrlToId(url) {
-  const match = /\/d\/([-\w]+)/.exec(url) || /[?&]id=([-\w]+)/.exec(url);
+  const match = /\/d\/([-\w]+)/.exec(url) || /\/folders\/([-\w]+)/.exec(url) || /[?&]id=([-\w]+)/.exec(url);
   return match ? match[1] : url;
 }
 
