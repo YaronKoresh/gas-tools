@@ -442,24 +442,26 @@ async function ExportCurrentCellPhoto() {
   });
 
   let pdf = DriveApp.getFileById(pdfId);
-  let blob = (await PdfToPng(pdf.getBlob()))[0];
-  blob.setName(`${GetActiveSheetName()}_${cellLoc}.png`);
-  let imgId = SaveFile(blob);
-  pdf.setTrashed(true);
-
-  return imgId;
+  try {
+    let blob = (await PdfToPng(pdf.getBlob()))[0];
+    blob.setName(`${GetActiveSheetName()}_${cellLoc}.png`);
+    return SaveFile(blob);
+  } finally {
+    pdf.setTrashed(true);
+  }
 }
 
 async function ExportCellPhoto(sheet, locat) {
   let pdfId = ExportPdf(sheet, locat, locat);
 
   let pdf = DriveApp.getFileById(pdfId);
-  let blob = (await PdfToPng(pdf.getBlob()))[0];
-  blob.setName(`${sheet}_${locat}.png`);
-  let imgId = SaveFile(blob);
-  pdf.setTrashed(true);
-
-  return imgId;
+  try {
+    let blob = (await PdfToPng(pdf.getBlob()))[0];
+    blob.setName(`${sheet}_${locat}.png`);
+    return SaveFile(blob);
+  } finally {
+    pdf.setTrashed(true);
+  }
 }
 
 function TrashFile(id) {
@@ -750,17 +752,18 @@ async function ExportRangeAsPng(sheet = null, start = "A1", end = null, options 
 
   let pdfId = ExportPdf(sheet, start, end, options);
 
-  let pdf = DriveApp.getFileById(pdfId);
-  let blob = (
-    await PdfToPng(pdf.getBlob())
-  )[0];
+  try {
+    let pdf = DriveApp.getFileById(pdfId);
+    let blob = (
+      await PdfToPng(pdf.getBlob())
+    )[0];
 
-  blob.setName(TimeNow().replaceAll(":", "-") + " " + name + ".png");
+    blob.setName(TimeNow().replaceAll(":", "-") + " " + name + ".png");
 
-  let img_id = SaveFile(blob, (options["path"] ?? "/") + "/" + DateNow().replaceAll("/", "-"));
-  TrashFile(pdfId);
-
-  return img_id;
+    return SaveFile(blob, (options["path"] ?? "/") + "/" + DateNow().replaceAll("/", "-"));
+  } finally {
+    TrashFile(pdfId);
+  }
 }
 
 function Now() {
