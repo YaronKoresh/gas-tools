@@ -55,3 +55,12 @@ test("PhotoDataUrl throws without exporting when the lock times out", async () =
   assert.strictEqual(state.ran, 0);
   assert.strictEqual(state.released, 0);
 });
+
+test("Unlock ignores a slot that was already released", () => {
+  const { Lock, Unlock, state } = load(true);
+  const n = Lock();
+  Unlock(n);
+  assert.doesNotThrow(() => Unlock(n));
+  assert.doesNotThrow(() => Unlock(99));
+  assert.strictEqual(state.released, 1);
+});

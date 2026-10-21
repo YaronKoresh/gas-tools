@@ -593,7 +593,9 @@ function Unlock(n) {
   SpreadsheetApp.flush();
   const lock = locks[n];
   locks[n] = null;
-  lock.releaseLock();
+  if (lock) {
+    lock.releaseLock();
+  }
 }
 
 function GetCellLocation(cell) {
