@@ -30,7 +30,7 @@ function load(failOnPage) {
       },
       getFileById: (id) => ({ setTrashed: () => state.trashed.push(id) }),
     },
-    TryEndlessly: (fn, id) => {
+    TryRepeatedly: (attempts, fn, id) => {
       if (id === failOnPage) throw new Error("no thumbnail");
       return "https://x/y=s220";
     },
@@ -64,4 +64,11 @@ test("PdfToPng trashes the temporary files created before a page fails", async (
   }
   assert.deepStrictEqual(state.created, ["f1", "f2"]);
   assert.deepStrictEqual(state.trashed, ["f1", "f2"]);
+});
+
+test("PdfToPng gives up on a thumbnail after a bounded number of attempts", async () => {
+  const { PdfToPng } = load(null);
+  const src = fnSource;
+  assert.ok(/TryRepeatedly\(\d+,/.test(src));
+  assert.ok(!src.includes("TryEndlessly"));
 });

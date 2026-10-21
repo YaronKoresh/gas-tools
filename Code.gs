@@ -972,6 +972,19 @@ function TryEndlessly(Func, ...args) {
   }
 }
 
+function TryRepeatedly(attempts, Func, ...args) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return Func(...args);
+    } catch (e) {
+      if (attempt >= attempts) {
+        throw e;
+      }
+      Utilities.sleep(500);
+    }
+  }
+}
+
 async function PdfToPng(blob) {
   const data = new Uint8Array(blob.getBytes());
   const pdfData = await PDFLib.PDFDocument.load(data);
@@ -987,7 +1000,7 @@ async function PdfToPng(blob) {
       const blob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `sample${i + 1}.pdf`);
       const id = DriveApp.createFile(blob).getId();
       obj.fileIds.push(id);
-      let link = TryEndlessly(function (id) {
+      let link = TryRepeatedly(60, function (id) {
         let ret = Drive.Files.get(id, { fields: "thumbnailLink" }).thumbnailLink;
         if (!ret) {
           throw new Error("Error: thumbnailLink is undefined!");
