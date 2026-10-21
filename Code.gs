@@ -1696,7 +1696,7 @@ function UrlInfo(d) {
   const urlAttribute = /(?<=^|:)(?:(href|ref|poster|action|formaction|data|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
   const nestedStr = /(&quot;|&#34;|&apos;|&#39;)[^&]*((?:(?!(&quot;|&#34;|&apos;|&#39;))&[^;]+)[^&]*)*(&quot;|&#34;|&apos;|&#39;)/gsm;
   const styles = /<\s*style[^<>]*>(?:(?!<\s*\/\s*style\s*>).)+<\s*\/\s*style\s*>/gsmi;
-  const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*)*<\/\s*script\s*>/gsmi;
+  const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*?((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*?)*?<\/\s*script\s*>/gsmi;
   const body = /<\s*body[^>]*>.+<\s*\/\s*body\s*>/gsmi;
   const bodyTags = /<\s*body[^>]*>|<\s*\/\s*body\s*>/gsmi
   const openTag = /<\s*\w+[^<>]*>/gsm;
