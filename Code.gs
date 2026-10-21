@@ -1439,9 +1439,9 @@ function UrlInfo(d) {
   if(m1){
     console.log(`Calculating M1 (${m1.length} steps)`);
     consl += "<style>";
-    Threads(async function(css){
+    m1.forEach(function(css){
       consl += `${css.trim().replaceAll(/<(\/)?style([^<>])*>/gsm,"")}\n`;
-    },m1);
+    });
     console.log(`Appending M1 (${m1.length} steps)`);
     consl = consl.trim() + "</style>";
   }
