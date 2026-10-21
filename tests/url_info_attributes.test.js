@@ -106,3 +106,13 @@ test("a namespaced href attribute is still rewritten", () => {
   const out = run(page('<svg><use xlink:href="/s.svg#a"></use></svg>'));
   assert.ok(out.includes('xlink:href="http://localhost:8000?R=ABS/s.svg#a"'), out);
 });
+
+test("mailto, tel and sms links are left as they are", () => {
+  const out = run(page('<a href="mailto:a@b.c">m</a><a href="tel:+123">t</a><a href="sms:1">s</a><a href="MAILTO:x@y.z">u</a>'));
+  assert.ok(out.includes('<a href="mailto:a@b.c">m</a><a href="tel:+123">t</a><a href="sms:1">s</a><a href="MAILTO:x@y.z">u</a>'), out);
+});
+
+test("http links are still sent through the redirect", () => {
+  const out = run(page('<a href="https://other.com/p">o</a>'));
+  assert.ok(out.includes('href="http://localhost:8000?R=ABShttps://other.com/p"'), out);
+});
