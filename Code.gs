@@ -120,7 +120,7 @@ function Flatten(arr) {
 
 function Exec(str, ...args) {
   let arr = args.map(function (arg, index) {
-    return `const _${index + 1} = ${Stringify(arg)}`;
+    return `const _${index + 1} = ${arg === undefined ? "undefined" : Stringify(arg)}`;
   });
   arr.push(str);
   return (new Function(arr.join(";")))();
