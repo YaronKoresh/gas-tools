@@ -1749,6 +1749,9 @@ function UrlInfo(d) {
 
   const toScriptLiteral = text => JSON.stringify(text).replaceAll("<", "\\u003c").replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
   const hostLiteral = toScriptLiteral(d);
+  const hostParts = /^(\[[^\]]*\]|[^:]*)(?::(\d*))?$/.exec(d);
+  const hostnameLiteral = toScriptLiteral(hostParts ? hostParts[1] : d);
+  const portLiteral = toScriptLiteral(hostParts && hostParts[2] ? hostParts[2] : "");
 
   console.log("Getting final URL");
 
@@ -1927,12 +1930,18 @@ function UrlInfo(d) {
 			},2000);
       window.${randId} = {
         search: "",
+        hash: "",
         host: ${hostLiteral},
-        hostname: ${hostLiteral},
+        hostname: ${hostnameLiteral},
+        port: ${portLiteral},
+        pathname: "/",
+        protocol: "https:",
         href: ${toScriptLiteral("https://" + d + "/")},
         origin: ${toScriptLiteral("https://" + d)},
+        assign: function(...args){},
         replace: function(...args){},
-        reload: function(...args){}
+        reload: function(...args){},
+        toString: function(){ return this.href; }
       };
 		</script>
   `;
