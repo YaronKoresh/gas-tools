@@ -1782,7 +1782,9 @@ function UrlInfo(d) {
       tagStart = i;
       continue;
     }
-    if( "\\" === c && rawTag !== null ){
+    if( rawTag !== null && ("<" === c || ">" === c) ){
+      str[i] = "<" === c ? "\uE000" : "\uE001";
+    } else if( "\\" === c && rawTag !== null ){
       i++;
     } else if( "'" === c || '"' === c ){
       isText = isText === "" ? c : isText === c ? "" : isText;
@@ -2080,7 +2082,7 @@ function UrlInfo(d) {
   }
 
   console.log(`HTML Post-Processing`);
-  consl = consl.trim() + `</body></html>`;
+  consl = consl.replaceAll("\uE000","<").replaceAll("\uE001",">").trim() + `</body></html>`;
   console.log(`HTML Output`);
   return Out(consl);
 }
