@@ -916,6 +916,9 @@ function Uuid(len) {
 function Random(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    throw new Error("Random needs finite numbers: " + min + ", " + max);
+  }
   if (min > max) {
     const tmp = min;
     min = max;

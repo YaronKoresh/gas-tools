@@ -44,3 +44,11 @@ test("Uuid can use the last character of its charset", () => {
   assert.deepStrictEqual([...seen].sort(), ["a", "b", "c"]);
   assert.strictEqual(Uuid(7).length, 7);
 });
+
+test("Random throws for bounds that are not finite numbers instead of returning NaN", () => {
+  const src = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
+  const R = new Function(`${src.match(/function Random\b[\s\S]*?\n}\n/)[0]}; return Random;`)();
+  assert.throws(() => R(NaN, 3), /finite/);
+  assert.throws(() => R(0, Infinity), /finite/);
+  assert.strictEqual(R(2, 2), 2);
+});
