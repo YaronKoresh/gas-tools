@@ -447,7 +447,7 @@ async function ExportCellPhoto(sheet, locat) {
 
   let pdf = DriveApp.getFileById(pdfId);
   let blob = (await PdfToPng(pdf.getBlob()))[0];
-  blob.setName(`${sheet}_${cellLoc}.png`);
+  blob.setName(`${sheet}_${locat}.png`);
   let imgId = SaveFile(blob);
   pdf.setTrashed(true);
 
