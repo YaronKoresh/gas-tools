@@ -995,14 +995,18 @@ function GetType(url, headers = {}) {
   url = FinalUrl(url, headers);
   let params = {
     'followRedirects': false,
-    'muteHttpExceptions': true
+    'muteHttpExceptions': true,
+    ...headers
   };
   try {
     let res = UrlFetchApp.fetch(url, params);
-    let contentType = res.getHeaders()["Content-Type"];
+    let responseHeaders = res.getHeaders();
+    let typeKey = Object.keys(responseHeaders).find(k => k.toLowerCase() === "content-type");
+    let contentType = typeKey ? responseHeaders[typeKey] : "";
     let code = res.getResponseCode();
     if(code<400){
-      return contentType.toString().length >= 1 ? contentType.toString().split(";")[0] : "application/unknown";
+      contentType = (contentType ?? "").toString();
+      return contentType.length >= 1 ? contentType.split(";")[0] : "application/unknown";
     } else {
       return null;
     }
