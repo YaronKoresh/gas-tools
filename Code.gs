@@ -1086,8 +1086,8 @@ function EmptyFolder(path) {
   for (let i = 0; i < folders.length; i++) {
     folder = folder.getFoldersByName(folders[i]).next();
   }
-  let files = folder.getFiles()
-  if (files.hasNext()) {
+  let files = folder.getFiles();
+  while (files.hasNext()) {
     files.next().setTrashed(true);
   }
 }
