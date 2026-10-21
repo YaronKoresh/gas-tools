@@ -186,7 +186,7 @@ function CreateDatabase(dbName) {
     SpreadsheetApp.setActiveSpreadsheet(ss);
     let sh = ss.getSheets()[0];
     sh.deleteColumns(3, 24);
-    DriveApp.getRootFolder().getFilesByName(dbName).next().moveTo(folder);
+    DriveApp.getFileById(ss.getId()).moveTo(folder);
   }
 }
 
@@ -388,7 +388,7 @@ function AddToDatabase(dbName, sheetName, key, value) {
       current_sec_ss = SpreadsheetApp.create(main_name + " (" + current_sec + ")");
       let current_sec_id = current_sec_ss.getId();
 
-      DriveApp.getRootFolder().getFilesByName(main_name + " (" + current_sec + ")").next().moveTo(DriveApp.getRootFolder().getFoldersByName("[DB]").next());
+      DriveApp.getFileById(current_sec_id).moveTo(DriveApp.getRootFolder().getFoldersByName("[DB]").next());
 
       sec_linking_values.push(current_sec);
       sec_linking_values = sec_linking_values.filter(v => v.toString().length >= 1);

@@ -7,9 +7,10 @@ const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const fnSource = source.match(/function CreateDatabase[\s\S]*?\n}\n/)[0];
 
 function run({ dbFolders = 1, fileExists = false } = {}) {
-  const state = { created: [], deletedColumns: [], moved: 0, folders: 0 };
+  const state = { created: [], deletedColumns: [], moved: 0, movedByName: 0, movedIds: [], folders: 0 };
   const sheet = { deleteColumns: (...a) => state.deletedColumns.push(a) };
   const ss = {
+    getId: () => "new-id",
     getSheetByName: () => null,
     getSheets: () => [sheet],
   };
@@ -25,8 +26,9 @@ function run({ dbFolders = 1, fileExists = false } = {}) {
       getRootFolder: () => ({
         getFoldersByName: () => iterator(dbFolders),
         createFolder: () => state.folders++,
-        getFilesByName: () => ({ next: () => ({ moveTo: () => state.moved++ }) }),
+        getFilesByName: () => ({ next: () => ({ moveTo: () => state.movedByName++ }) }),
       }),
+      getFileById: (id) => ({ moveTo: () => (state.moved++, state.movedIds.push(id)) }),
     },
     SpreadsheetApp: {
       create: (name) => {
@@ -55,4 +57,10 @@ test("CreateDatabase does nothing when the database exists", () => {
 
 test("CreateDatabase refuses several [DB] folders", () => {
   assert.throws(() => run({ dbFolders: 2 }), /Multiple \[DB\] folders/);
+});
+
+test("CreateDatabase moves the file it created, not a file of the same name in the root", () => {
+  const state = run();
+  assert.deepStrictEqual(state.movedIds, ["new-id"]);
+  assert.strictEqual(state.movedByName, 0);
 });

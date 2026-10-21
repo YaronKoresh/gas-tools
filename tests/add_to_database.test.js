@@ -7,7 +7,7 @@ const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (name) => source.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}\\n`))[0];
 
 function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
-  const state = { released: 0, nowCalls: 0, writes: [], formats: [], deleted: [] };
+  const state = { released: 0, nowCalls: 0, writes: [], formats: [], moved: [], deleted: [] };
   const rangeOf = (sheetName) => (a) => {
     const range = {
       getValues: () => (sheetName === "data" ? dataColumn : [[""]]),
@@ -51,6 +51,7 @@ function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
       return "21/10/2026 10:00:00";
     },
     DriveApp: {
+      getFileById: (id) => ({ moveTo: () => state.moved.push(id) }),
       getRootFolder: () => {
         if (driveThrows) throw new Error("no drive");
         return { ...folder, getFilesByName: () => ({ hasNext: () => true, next: () => ({ moveTo() {} }) }) };
@@ -117,4 +118,10 @@ test("AddToDatabase keeps the shard stamps and ids of the main sheet as plain te
   assert.deepStrictEqual(mainFormats.map((f) => f[2]), ["@", "@"]);
   assert.deepStrictEqual(mainFormats.map((f) => f[1]).sort(), mainWrites.map((w) => w[1]).sort());
   assert.deepStrictEqual(mainWrites[0][2], [["21/10/2026 10:00:00"]]);
+});
+
+test("AddToDatabase moves the new shard by its id and not by a name lookup in the root", () => {
+  const { AddToDatabase, state } = load();
+  AddToDatabase("db", "Logs", "k", 1);
+  assert.deepStrictEqual(state.moved, ["data-id"]);
 });
