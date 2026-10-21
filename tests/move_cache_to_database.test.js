@@ -6,17 +6,19 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (name) => source.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}\\n`))[0];
 
-function load(entries, failFor = []) {
-  const state = { writes: [], removed: [] };
+function load(entries, failFor = [], failKey = null) {
+  const state = { writes: [], removed: [], put: [] };
   const env = {
     cache: {
       getAll: () => entries,
       removeAll: (names) => state.removed.push(...names),
+      put: (name, text, time) => state.put.push([name, text, time]),
     },
+    Stringify: (obj) => JSON.stringify(obj),
     Flatten: (arr) => arr.flat(Infinity),
     Parse: (text) => JSON.parse(text),
     AddToDatabase: (db, sheet, key, value) => {
-      if (failFor.includes(sheet)) throw new Error("write failed");
+      if (failFor.includes(sheet) || key === failKey) throw new Error("write failed");
       state.writes.push([db, sheet, key, value]);
     },
   };
@@ -61,4 +63,18 @@ test("MoveCacheToDatabase does nothing for an empty cache", () => {
   run("db", "a");
   assert.deepStrictEqual(state.writes, []);
   assert.deepStrictEqual(state.removed, []);
+});
+
+test("MoveCacheToDatabase keeps only the unwritten keys when a write fails half way", () => {
+  const { run, state } = load({ a: '{"x":1,"y":2,"z":3}' }, [], "y");
+  run("db", "a");
+  assert.deepStrictEqual(state.writes, [["db", "a", "x", 1]]);
+  assert.deepStrictEqual(state.removed, []);
+  assert.deepStrictEqual(state.put, [["a", '{"y":2,"z":3}', 21600]]);
+});
+
+test("MoveCacheToDatabase does not rewrite the cache when nothing was written", () => {
+  const { run, state } = load({ a: '{"x":1,"y":2}' }, [], "x");
+  run("db", "a");
+  assert.deepStrictEqual(state.put, []);
 });

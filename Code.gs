@@ -87,19 +87,22 @@ function MoveCacheToDatabase(dbName, ...cache_names) {
 
   const moved = [];
   for (let i = 0; i < k.length; i++) {
+    let pairs = [];
+    let done = 0;
     try {
       let objs_arr = Flatten([Parse(c[k[i]])]);
       for (let j = 0; j < objs_arr.length; j++) {
-        let obj = objs_arr[j];
-        let obj_ks = Object.keys(obj);
-        let obj_vs = Object.values(obj);
-        for (let ij = 0; ij < obj_ks.length; ij++) {
-          AddToDatabase(dbName, k[i], obj_ks[ij], obj_vs[ij]);
-        }
+        pairs.push(...Object.entries(objs_arr[j]));
+      }
+      for (; done < pairs.length; done++) {
+        AddToDatabase(dbName, k[i], pairs[done][0], pairs[done][1]);
       }
       moved.push(k[i]);
     } catch (e) {
       console.log("Could not move cache " + k[i] + " into database: " + e);
+      if (done > 0) {
+        cache.put(k[i], Stringify(Object.fromEntries(pairs.slice(done))), 21600);
+      }
     }
   }
 
