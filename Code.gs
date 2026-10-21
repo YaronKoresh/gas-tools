@@ -2,8 +2,8 @@ const domain = /(([A-Za-z]+:)?\/\/)?(\w[-\w]+\w|\w+)(\.(\w[-\w]+\w|\w+))+(:\d+)?
 const cache = CacheService.getScriptCache();
 const uuid_charset = String.fromCodePoint(...Range(6016, 55291)).split("").filter(c => /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(c)).join("");
 
-const cdnjs_pdf = "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
-eval(UrlFetchApp.fetch(cdnjs_pdf).getContentText());
+const pdf_lib_url = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js";
+eval(UrlFetchApp.fetch(pdf_lib_url).getContentText());
 
 let locks = [];
 
