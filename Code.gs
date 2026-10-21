@@ -956,7 +956,16 @@ function Random(min, max) {
 function Stringify(obj) {
   const FunctionSource = function (fn) {
     const text = fn.toString();
-    return /\{\s*\[native code\]\s*\}\s*$/.test(text) ? "null" : text;
+    if (/\{\s*\[native code\]\s*\}\s*$/.test(text)) {
+      return "null";
+    }
+    const method = /^(async\s+)?(\*\s*)?([A-Za-z_$][\w$]*)\s*\(/.exec(text);
+    if (method && !/^(function|async)\b/.test(method[3]) && !/^async\s*\(/.test(text)) {
+      return text.replace(/^(async\s+)?(\*\s*)?/, function (all, isAsync, star) {
+        return (isAsync || "") + "function " + (star || "");
+      });
+    }
+    return text;
   };
   const Primitive = function (val) {
     return typeof val === "symbol" ? "null" : JSON.stringify(val);
