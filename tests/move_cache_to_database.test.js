@@ -10,7 +10,10 @@ function load(entries, failFor = [], failKey = null) {
   const state = { writes: [], removed: [], put: [] };
   const env = {
     cache: {
-      getAll: () => entries,
+      getAll: (names) => {
+        state.asked = names;
+        return entries;
+      },
       removeAll: (names) => state.removed.push(...names),
       put: (name, text, time) => state.put.push([name, text, time]),
     },
@@ -77,4 +80,12 @@ test("MoveCacheToDatabase does not rewrite the cache when nothing was written", 
   const { run, state } = load({ a: '{"x":1,"y":2}' }, [], "x");
   run("db", "a");
   assert.deepStrictEqual(state.put, []);
+});
+
+test("MoveCacheToDatabase accepts the cache names as one array or as separate arguments", () => {
+  const { run, state } = load({ a: '{"x":1}', b: '{"y":2}' });
+  run("db", ["a", "b"]);
+  assert.deepStrictEqual(state.asked, ["a", "b"]);
+  run("db", "a", ["b"]);
+  assert.deepStrictEqual(state.asked, ["a", "b"]);
 });

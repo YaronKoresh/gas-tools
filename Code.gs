@@ -103,7 +103,7 @@ function MoveCacheToDatabase(dbName, ...cache_names) {
   let k = null;
 
   try {
-    c = cache.getAll(cache_names);
+    c = cache.getAll(Flatten(cache_names));
     console.log(c);
     k = Object.keys(c);
   } catch (e) {
