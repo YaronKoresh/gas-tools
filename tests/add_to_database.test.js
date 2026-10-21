@@ -25,8 +25,8 @@ function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
   const mainSheet = { getRange: rangeOf("main") };
   const mainSs = { getName: () => "Database db", getSheets: () => [mainSheet], getSheetByName: () => null };
   const folder = {
-    getFoldersByName: () => ({ next: () => folder }),
-    getFilesByName: () => ({ next: () => ({ moveTo() {} }) }),
+    getFoldersByName: () => ({ hasNext: () => true, next: () => folder }),
+    getFilesByName: () => ({ hasNext: () => true, next: () => ({ moveTo() {} }) }),
   };
   const env = {
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => state.released++ }) },
@@ -46,13 +46,13 @@ function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
     DriveApp: {
       getRootFolder: () => {
         if (driveThrows) throw new Error("no drive");
-        return { ...folder, getFilesByName: () => ({ next: () => ({ moveTo() {} }) }) };
+        return { ...folder, getFilesByName: () => ({ hasNext: () => true, next: () => ({ moveTo() {} }) }) };
       },
     },
     Flatten: (arr) => arr.flat(Infinity),
     Stringify: (v) => JSON.stringify(v),
   };
-  const code = `${grab("Lock")}${grab("Unlock")}${grab("AddToDatabase")}; return AddToDatabase;`;
+  const code = `${grab("Lock")}${grab("Unlock")}${grab("GetDatabaseFile")}${grab("AddToDatabase")}; return AddToDatabase;`;
   const AddToDatabase = new Function(...Object.keys(env), code)(...Object.values(env));
   return { AddToDatabase, state };
 }

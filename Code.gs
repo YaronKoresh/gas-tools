@@ -190,6 +190,18 @@ function CreateDatabase(dbName) {
   }
 }
 
+function GetDatabaseFile(dbName) {
+  const folders = DriveApp.getRootFolder().getFoldersByName("[DB]");
+  if (!folders.hasNext()) {
+    throw new Error("The [DB] folder was not found. Run CreateDatabase first.");
+  }
+  const files = folders.next().getFilesByName(dbName);
+  if (!files.hasNext()) {
+    throw new Error("Database not found: " + dbName);
+  }
+  return files.next();
+}
+
 function CountFromDatabase(dbName, sheetName, key, miliseconds = 0) {
 
   let ts_backward = miliseconds;
@@ -205,7 +217,7 @@ function CountFromDatabase(dbName, sheetName, key, miliseconds = 0) {
 
   dbName = "Database " + dbName.toString();
 
-  let db_file = DriveApp.getRootFolder().getFoldersByName("[DB]").next().getFilesByName(dbName).next();
+  let db_file = GetDatabaseFile(dbName);
   let main_ss = SpreadsheetApp.open(db_file);
   SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
@@ -277,7 +289,7 @@ function ReadFromDatabase(dbName, sheetName, key, miliseconds = 0) {
 
   dbName = "Database " + dbName.toString();
 
-  let db_file = DriveApp.getRootFolder().getFoldersByName("[DB]").next().getFilesByName(dbName).next();
+  let db_file = GetDatabaseFile(dbName);
   let main_ss = SpreadsheetApp.open(db_file);
   SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
@@ -352,7 +364,7 @@ function AddToDatabase(dbName, sheetName, key, value) {
     let current_datetime = (new Date(year, month_i, day, hr, min, sec));
     let ms = (new Date()).getTime() - current_datetime.getTime();
 
-    let db_file = DriveApp.getRootFolder().getFoldersByName("[DB]").next().getFilesByName(dbName).next();
+    let db_file = GetDatabaseFile(dbName);
     let main_ss = SpreadsheetApp.open(db_file);
     SpreadsheetApp.setActiveSpreadsheet(main_ss);
 

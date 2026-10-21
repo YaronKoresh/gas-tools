@@ -19,14 +19,14 @@ function load(shardRows) {
   const shard = sheet(shardRows);
   const main = sheet([["21.10.2026 10:00:00", "SHARD"]]);
   const DriveApp = {
-    getRootFolder: () => ({ getFoldersByName: () => ({ next: () => ({ getFilesByName: () => ({ next: () => ({}) }) }) }) }),
+    getRootFolder: () => ({ getFoldersByName: () => ({ hasNext: () => true, next: () => ({ getFilesByName: () => ({ hasNext: () => true, next: () => ({}) }) }) }) }),
   };
   const SpreadsheetApp = {
     open: () => ({ getSheets: () => [main], getSheetByName: () => main }),
     setActiveSpreadsheet() {},
     openById: () => ({ getSheetByName: (n) => (n === "Logs" ? shard : null) }),
   };
-  const code = `${grab("Flatten")}${grab("Parse")}${grab("CountFromDatabase")}${grab("ReadFromDatabase")}; return { CountFromDatabase, ReadFromDatabase };`;
+  const code = `${grab("Flatten")}${grab("Parse")}${grab("GetDatabaseFile")}${grab("CountFromDatabase")}${grab("ReadFromDatabase")}; return { CountFromDatabase, ReadFromDatabase };`;
   return new Function("DriveApp", "SpreadsheetApp", code)(DriveApp, SpreadsheetApp);
 }
 
