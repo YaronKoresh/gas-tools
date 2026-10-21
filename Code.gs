@@ -1584,6 +1584,12 @@ function UrlInfo(d) {
 
   str = str.replaceAll(/<!--[\s\S]*?(-->|$)/g,"");
 
+  const baseTag = /<\s*base\b[^>]*?\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(str);
+  const baseHref = baseTag ? (baseTag[1] ?? baseTag[2] ?? baseTag[3]).trim() : "";
+  if(baseHref !== ""){
+    url = RelativeToAbsoluteUrl(url,baseHref);
+  }
+
   const markup = str;
   str = str.split("");
   let isText = "";
