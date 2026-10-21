@@ -1343,7 +1343,9 @@ function UrlInfo(d) {
   const tagRight = /\s*(\/)?\s*>/gsm;
 
   const randId = "_" + Math.random().toString().slice(2);
-  let url = "http://"+d;
+  const schemePattern = /^[A-Za-z][A-Za-z0-9+.\-]*:\/\//;
+  let url = schemePattern.test(d) ? d : "http://"+d;
+  d = url.replace(schemePattern, "").split(/[\/?#]/)[0];
 
   console.log("Getting final URL");
 
