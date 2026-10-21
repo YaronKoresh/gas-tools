@@ -16,3 +16,11 @@ test("ParseCellLocation rejects row zero", () => {
   assert.throws(() => ParseCellLocation("A0"), /Invalid cell location: A0/);
   assert.throws(() => ParseCellLocation("B00"), /Invalid cell location/);
 });
+
+test("ParseCellLocation accepts absolute references written with dollar signs", () => {
+  assert.deepStrictEqual(ParseCellLocation("$A$1"), { column: 1, row: 1 });
+  assert.deepStrictEqual(ParseCellLocation("$B2"), { column: 2, row: 2 });
+  assert.deepStrictEqual(ParseCellLocation("C$3"), { column: 3, row: 3 });
+  assert.throws(() => ParseCellLocation("$$A1"), /Invalid cell location/);
+  assert.throws(() => ParseCellLocation("A$"), /Invalid cell location/);
+});
