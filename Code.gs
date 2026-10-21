@@ -1026,13 +1026,13 @@ function ShortUrl(bitlyApiKey, bitlyGuid, url) {
 }
 
 function GetType(url, headers = {}) {
-  url = FinalUrl(url, headers);
   let params = {
     'followRedirects': false,
     'muteHttpExceptions': true,
     ...headers
   };
   try {
+    url = FinalUrl(url, headers);
     let res = UrlFetchApp.fetch(url, params);
     let responseHeaders = res.getHeaders();
     let typeKey = Object.keys(responseHeaders).find(k => k.toLowerCase() === "content-type");
@@ -1109,7 +1109,7 @@ function FinalUrl(url, headers = {}) {
   while (redirection) {
     current++;
     if (current > max) {
-      return;
+      throw new Error("Too many redirects: " + url);
     }
     url = redirection;
     Redirect();

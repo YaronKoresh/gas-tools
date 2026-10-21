@@ -59,3 +59,27 @@ test("FinalUrl follows a Location header sent in lower case", () => {
   const f = loadWithRelative({ "https://a.example.com/x": { location: "https://b.example.org/z" } });
   assert.strictEqual(f("https://a.example.com/x"), "https://b.example.org/z");
 });
+
+test("FinalUrl throws a clear error when the redirects never end", () => {
+  const loop = { "https://a.example.com/x": { Location: "/x" } };
+  const f = loadWithRelative(loop);
+  assert.throws(() => f("https://a.example.com/x"), /redirect/i);
+});
+
+test("GetType returns null when the redirects never end", () => {
+  const getTypeSource = source.match(/function GetType[\s\S]*?\n}\n/)[0];
+  const env = {
+    FinalUrl: () => {
+      throw new Error("Too many redirects");
+    },
+    UrlFetchApp: { fetch: () => assert.fail("must not fetch") },
+  };
+  const GetType = new Function(...Object.keys(env), `${getTypeSource}; return GetType;`)(...Object.values(env));
+  const orig = console.log;
+  console.log = () => {};
+  try {
+    assert.strictEqual(GetType("http://x/y"), null);
+  } finally {
+    console.log = orig;
+  }
+});
