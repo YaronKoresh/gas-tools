@@ -1743,6 +1743,10 @@ function UrlInfo(d) {
   const tagRight = /\s*(\/)?\s*>/gsm;
 
   const randId = "_" + Math.random().toString().slice(2);
+  if (typeof d !== "string" || d.trim() === "") {
+    throw new Error("UrlInfo needs a page address");
+  }
+  d = d.trim();
   const schemePattern = /^[A-Za-z][A-Za-z0-9+.\-]*:\/\//;
   let url = schemePattern.test(d) ? d : "http://"+d;
   d = url.replace(schemePattern, "").split(/[\/?#]/)[0];
