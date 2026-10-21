@@ -7,7 +7,7 @@ const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (name) => source.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}\\n`))[0];
 
 function load({ driveThrows = false, dataColumn = [[""]], stringify = (v) => JSON.stringify(v) } = {}) {
-  const state = { created: 0, locked: 0, released: 0, nowCalls: 0, writes: [], formats: [], moved: [], deleted: [] };
+  const state = { activated: 0, created: 0, locked: 0, released: 0, nowCalls: 0, writes: [], formats: [], moved: [], deleted: [] };
   const rangeOf = (sheetName) => (a) => {
     const range = {
       getValues: () => (sheetName === "data" ? dataColumn : [[""]]),
@@ -40,7 +40,7 @@ function load({ driveThrows = false, dataColumn = [[""]], stringify = (v) => JSO
     SpreadsheetApp: {
       flush() {},
       open: () => mainSs,
-      setActiveSpreadsheet() {},
+      setActiveSpreadsheet: () => state.activated++,
       create: () => {
         state.created++;
         return dataSs;
@@ -146,4 +146,10 @@ test("AddToDatabase stores a missing key as the text of the key", () => {
   AddToDatabase("db", "Logs", undefined, 1);
   const dataWrites = state.writes.filter((w) => w[0] === "data").map((w) => w[2]);
   assert.ok(dataWrites.includes("undefined"));
+});
+
+test("AddToDatabase does not change the active spreadsheet of the caller", () => {
+  const { AddToDatabase, state } = load();
+  AddToDatabase("db", "Logs", "k", 1);
+  assert.strictEqual(state.activated, 0);
 });

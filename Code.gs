@@ -186,7 +186,6 @@ function CreateDatabase(dbName) {
   dbName = "Database " + dbName.toString();
   if (!folder.getFilesByName(dbName).hasNext()) {
     let ss = SpreadsheetApp.create(dbName);
-    SpreadsheetApp.setActiveSpreadsheet(ss);
     let sh = ss.getSheets()[0];
     sh.deleteColumns(3, 24);
     DriveApp.getFileById(ss.getId()).moveTo(folder);
@@ -222,7 +221,6 @@ function CountFromDatabase(dbName, sheetName, key, miliseconds = 0) {
 
   let db_file = GetDatabaseFile(dbName);
   let main_ss = SpreadsheetApp.open(db_file);
-  SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
   let ids = main_ss.getSheets()[0].getRange("B1:B");
   let id_values = Flatten(ids.getValues().filter(v => v.toString().length >= 1));
@@ -294,7 +292,6 @@ function ReadFromDatabase(dbName, sheetName, key, miliseconds = 0) {
 
   let db_file = GetDatabaseFile(dbName);
   let main_ss = SpreadsheetApp.open(db_file);
-  SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
   let ids = main_ss.getSheets()[0].getRange("B1:B");
   let id_values = Flatten(ids.getValues().filter(v => v.toString().length >= 1));
@@ -371,7 +368,6 @@ function AddToDatabase(dbName, sheetName, key, value) {
 
     let db_file = GetDatabaseFile(dbName);
     let main_ss = SpreadsheetApp.open(db_file);
-    SpreadsheetApp.setActiveSpreadsheet(main_ss);
 
     let main_name = main_ss.getName();
     let main_sh = main_ss.getSheets()[0];

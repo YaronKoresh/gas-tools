@@ -7,7 +7,7 @@ const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const fnSource = source.match(/function CreateDatabase[\s\S]*?\n}\n/)[0];
 
 function run({ dbFolders = 1, fileExists = false } = {}) {
-  const state = { created: [], deletedColumns: [], moved: 0, movedByName: 0, movedIds: [], folders: 0 };
+  const state = { activated: 0, created: [], deletedColumns: [], moved: 0, movedByName: 0, movedIds: [], folders: 0 };
   const sheet = { deleteColumns: (...a) => state.deletedColumns.push(a) };
   const ss = {
     getId: () => "new-id",
@@ -35,7 +35,7 @@ function run({ dbFolders = 1, fileExists = false } = {}) {
         state.created.push(name);
         return ss;
       },
-      setActiveSpreadsheet() {},
+      setActiveSpreadsheet: () => state.activated++,
     },
   };
   const CreateDatabase = new Function(...Object.keys(env), `${fnSource}; return CreateDatabase;`)(...Object.values(env));
@@ -63,4 +63,9 @@ test("CreateDatabase moves the file it created, not a file of the same name in t
   const state = run();
   assert.deepStrictEqual(state.movedIds, ["new-id"]);
   assert.strictEqual(state.movedByName, 0);
+});
+
+test("CreateDatabase leaves the active spreadsheet alone", () => {
+  const state = run();
+  assert.strictEqual(state.activated, 0);
 });
