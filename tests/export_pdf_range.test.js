@@ -6,7 +6,7 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (re) => source.match(re)[0];
 
-function run(start, end, sheetName = "S") {
+function run(start, end, sheetName = "S", options = {}, full = false) {
   const state = { url: null };
   const env = {
     SpreadsheetApp: {
@@ -38,11 +38,14 @@ function run(start, end, sheetName = "S") {
   const orig = console.log;
   console.log = () => {};
   try {
-    ExportPdf(sheetName, start, end);
+    ExportPdf(sheetName, start, end, options);
   } finally {
     console.log = orig;
   }
   const q = new URL(state.url).searchParams;
+  if (full) {
+    return q;
+  }
   return { c1: q.get("c1"), r1: q.get("r1"), c2: q.get("c2"), r2: q.get("r2") };
 }
 
@@ -68,4 +71,11 @@ test("ExportPdf names the sheet that does not exist", () => {
 
 test("ExportPdf uses the active sheet when no name is given", () => {
   assert.deepStrictEqual(run("A1", "B2", null), { c1: "0", r1: "0", c2: "2", r2: "2" });
+});
+
+test("ExportPdf does not send the name and path options to the export url", () => {
+  const q = run("A1", "B2", "S", { name: "report", path: "/Reports", size: "A3" }, true);
+  assert.strictEqual(q.has("name"), false);
+  assert.strictEqual(q.has("path"), false);
+  assert.strictEqual(q.get("size"), "A3");
 });

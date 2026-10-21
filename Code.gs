@@ -701,7 +701,7 @@ function ExportPdf(sheet = null, start = "A1", end = null, options = {}) {
   let options_keys = Object.keys(options);
   for (let i = 0; i < options_keys.length; i++) {
     let key = options_keys[i];
-    if (key == "name") {
+    if (key == "name" || key == "path") {
       continue;
     }
     printOptions[key] = options[key];
