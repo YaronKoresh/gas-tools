@@ -24,6 +24,6 @@ test("nested object as first key is not prefixed", () => {
 });
 
 test("GetSync and ExportPdf add the question mark once", () => {
-  assert.ok(source.includes('path + "?" + ObjectToQueryString('));
+  assert.ok(source.includes("const query = ObjectToQueryString(params_obj);"));
   assert.ok(source.includes("export?${ObjectToQueryString("));
 });

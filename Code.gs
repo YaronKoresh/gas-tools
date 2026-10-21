@@ -35,7 +35,11 @@ function PostSync(path, params_obj = {}, headers_obj = {}) {
 }
 
 function GetSync(path, params_obj = {}, headers_obj = {}) {
-  return UrlFetchApp.fetch(path + "?" + ObjectToQueryString(params_obj), {
+  const query = ObjectToQueryString(params_obj);
+  if (query !== "") {
+    path += (path.includes("?") ? (/[?&]$/.test(path) ? "" : "&") : "?") + query;
+  }
+  return UrlFetchApp.fetch(path, {
     muteHttpExceptions: true,
     headers: headers_obj,
   })
