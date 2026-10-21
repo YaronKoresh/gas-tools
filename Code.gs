@@ -1714,7 +1714,7 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
 }
 
 function UrlInfo(d) {
-  const urlAttribute = /(?<=^|:)(?:(href|ref|poster|action|formaction|data|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
+  const urlAttribute = /(?<=^|:)(?:(href|ref|poster|action|formaction|background|cite|longdesc|data|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
   const nestedStr = /(&quot;|&#34;|&apos;|&#39;)[^&]*((?:(?!(&quot;|&#34;|&apos;|&#39;))&[^;]+)[^&]*)*(&quot;|&#34;|&apos;|&#39;)/gsm;
   const styles = /<\s*style[^<>]*>(?:(?!<\s*\/\s*style\s*>).)+<\s*\/\s*style\s*>/gsmi;
   const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*?((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*?)*?<\/\s*script\s*>/gsmi;
@@ -1740,7 +1740,7 @@ function UrlInfo(d) {
   url = FinalUrl(url);
   let dom = 'http://localhost:8000';
   const splitUrls = (matched, decodeQuotes) => {
-    let value = matched.replace(/^(href|ref|poster|action|formaction|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"");
+    let value = matched.replace(/^(href|ref|poster|action|formaction|background|cite|longdesc|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"");
     if(decodeQuotes){
       value = value.replaceAll(/&(quot|#34|apos|#39);/gms," ");
     }
@@ -1861,6 +1861,11 @@ function UrlInfo(d) {
       const name = attribute[1].toLowerCase();
       if( ["dir","lang","class","id","style"].includes(name) ){
         kept.push(name === "style" ? rewriteCssUrls(attribute[0]) : attribute[0]);
+      } else if( name === "background" ){
+        const target = attribute[2].slice(1,-1).trim();
+        if( target !== "" ){
+          kept.push(/^(data|javascript|mailto|tel|sms|blob|about):/i.test(target) ? attribute[0] : `background="${redirectUrl(target)}"`);
+        }
       }
     }
     return kept.length === 0 ? "" : " " + kept.join(" ");
