@@ -69,14 +69,11 @@ function ReadFromCache(name, key) {
 }
 
 function MoveCacheToDatabase(dbName, ...cache_names) {
-  let arr = [];
-
   let c = null;
   let k = null;
 
   try {
     c = cache.getAll(cache_names);
-    cache.removeAll(cache_names);
     console.log(c);
     k = Object.keys(c);
   } catch (e) {
@@ -84,22 +81,26 @@ function MoveCacheToDatabase(dbName, ...cache_names) {
     return;
   }
 
+  const moved = [];
   for (let i = 0; i < k.length; i++) {
-    let objs_arr = Flatten([Parse(c[k[i]])]);
-    for (let j = 0; j < objs_arr.length; j++) {
-      let obj = objs_arr[j];
-      let obj_ks = Object.keys(obj);
-      let obj_vs = Object.values(obj);
-      for (let ij = 0; ij < obj_ks.length; ij++) {
-        let current_asy = ExecAsync(
-          function (db, sh, ky, vl) {
-            AddToDatabase(db, sh, ky, vl);
-          },
-          dbName, k[i], obj_ks[ij], obj_vs[ij]
-        );
-        arr.push(current_asy);
+    try {
+      let objs_arr = Flatten([Parse(c[k[i]])]);
+      for (let j = 0; j < objs_arr.length; j++) {
+        let obj = objs_arr[j];
+        let obj_ks = Object.keys(obj);
+        let obj_vs = Object.values(obj);
+        for (let ij = 0; ij < obj_ks.length; ij++) {
+          AddToDatabase(dbName, k[i], obj_ks[ij], obj_vs[ij]);
+        }
       }
+      moved.push(k[i]);
+    } catch (e) {
+      console.log("Could not move cache " + k[i] + " into database: " + e);
     }
+  }
+
+  if (moved.length > 0) {
+    cache.removeAll(moved);
   }
 }
 
