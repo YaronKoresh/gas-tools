@@ -675,7 +675,7 @@ function Qr(txt, options = {}) {
 
   console.log("QR text: " + txt);
 
-  let blob = UrlFetchApp.fetch(`https://api.qrserver.com/v1/create-qr-code?size=500x500&data=${encodeURI(txt)}`).getBlob();
+  let blob = UrlFetchApp.fetch(`https://api.qrserver.com/v1/create-qr-code?size=500x500&data=${encodeURIComponent(txt)}`).getBlob();
 
   blob.setName(TimeNow().replaceAll(":", "-") + " " + (options.name ?? "QR_Code") + ".png");
 
