@@ -1240,8 +1240,14 @@ function ObjectToQueryString(obj) {
   const pairs = [];
   Object.keys(obj).forEach(function (key) {
     const value = obj[key];
-    if (value !== null && typeof value === "object") {
+    if (value === undefined || value === null) {
+      return;
+    }
+    if (typeof value === "object") {
       Object.keys(value).forEach(function (k) {
+        if (value[k] === undefined || value[k] === null) {
+          return;
+        }
         pairs.push(`${encodeURIComponent(key)}%5B${encodeURIComponent(k)}%5D=${encodeURIComponent(value[k])}`);
       });
     } else {

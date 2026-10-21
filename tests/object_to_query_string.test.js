@@ -27,3 +27,12 @@ test("GetSync and ExportPdf add the question mark once", () => {
   assert.ok(source.includes("const query = ObjectToQueryString(params_obj);"));
   assert.ok(source.includes("export?${ObjectToQueryString("));
 });
+
+test("undefined and null values are left out instead of being sent as text", () => {
+  assert.strictEqual(ObjectToQueryString({ a: undefined, b: null, c: 1 }), "c=1");
+  assert.strictEqual(ObjectToQueryString({ a: { x: undefined, y: 2 } }), "a%5By%5D=2");
+});
+
+test("false and zero are still sent", () => {
+  assert.strictEqual(ObjectToQueryString({ a: false, b: 0, c: "" }), "a=false&b=0&c=");
+});
