@@ -11,6 +11,7 @@ function run(names) {
   const list = names.map((n) => ({ setTrashed: () => trashed.push(n) }));
   let i = 0;
   const leaf = { getFiles: () => ({ hasNext: () => i < list.length, next: () => list[i++] }) };
+  leaf.getFoldersByName = () => ({ next: () => leaf });
   const root = { getFoldersByName: () => ({ next: () => leaf }) };
   new Function("DriveApp", `${fnSource}; EmptyFolder("a/b");`)({ getRootFolder: () => root });
   return trashed;
