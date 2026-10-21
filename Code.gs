@@ -967,28 +967,31 @@ async function PdfToPng(blob) {
   const pageLength = pdfData.getPageCount();
   console.log(`Total pages: ${pageLength}`);
   const obj = { imageBlobs: [], fileIds: [] };
-  for (let i = 0; i < pageLength; i++) {
-    const pdfDoc = await PDFLib.PDFDocument.create();
-    const [page] = await pdfDoc.copyPages(pdfData, [i]);
-    await pdfDoc.addPage(page);
-    const bytes = await pdfDoc.save();
-    const blob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `sample${i + 1}.pdf`);
-    const id = DriveApp.createFile(blob).getId();
-    let link = TryEndlessly(function (id) {
-      let ret = Drive.Files.get(id, { fields: "thumbnailLink" }).thumbnailLink;
-      if (!ret) {
-        throw new Error("Error: thumbnailLink is undefined!");
-      }
-      return ret;
-    }, id);
-    link = link.replace(/\=s[0-9]{1,}/, "=s1024");
-    console.log("PdfToPng: " + link);
-    const imageBlob = UrlFetchApp.fetch(link).getBlob();
-    imageBlob.setName(`page${i + 1}.png`);
-    obj.imageBlobs.push(imageBlob);
-    obj.fileIds.push(id);
+  try {
+    for (let i = 0; i < pageLength; i++) {
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      const [page] = await pdfDoc.copyPages(pdfData, [i]);
+      await pdfDoc.addPage(page);
+      const bytes = await pdfDoc.save();
+      const blob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `sample${i + 1}.pdf`);
+      const id = DriveApp.createFile(blob).getId();
+      obj.fileIds.push(id);
+      let link = TryEndlessly(function (id) {
+        let ret = Drive.Files.get(id, { fields: "thumbnailLink" }).thumbnailLink;
+        if (!ret) {
+          throw new Error("Error: thumbnailLink is undefined!");
+        }
+        return ret;
+      }, id);
+      link = link.replace(/\=s[0-9]{1,}/, "=s1024");
+      console.log("PdfToPng: " + link);
+      const imageBlob = UrlFetchApp.fetch(link).getBlob();
+      imageBlob.setName(`page${i + 1}.png`);
+      obj.imageBlobs.push(imageBlob);
+    }
+  } finally {
+    obj.fileIds.forEach(id => DriveApp.getFileById(id).setTrashed(true));
   }
-  obj.fileIds.forEach(id => DriveApp.getFileById(id).setTrashed(true));
   return obj.imageBlobs;
 }
 
