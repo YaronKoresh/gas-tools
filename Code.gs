@@ -1751,6 +1751,16 @@ function UrlInfo(d) {
     value = value.trim();
     return value === "" ? [] : [value];
   };
+  const renameLocation = code => code.replace(/("(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|`(?:\\[\s\S]|[^`\\])*`|\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(?<![\w$])location(?![\w$])/g, (all, skipped, at) => {
+    if(skipped){
+      return skipped[0] === "`" ? skipped.replace(/\$\{([^}]*)\}/g, (whole, expression) => "${" + renameLocation(expression) + "}") : all;
+    }
+    const before = /(?:^|[^\w$.])([\w$]+)\s*\.\s*$|(\.\s*)$/.exec(code.slice(Math.max(0, at - 40), at));
+    if(before && (before[2] || !/^(window|document|self|top|parent|globalThis)$/.test(before[1]))){
+      return all;
+    }
+    return randId;
+  });
   const redirectValue = u => encodeURI(u).replaceAll("&", "%26").replaceAll("+", "%2B");
   const redirectUrl = u => `${dom}?redirect${randId}=${redirectValue(RelativeToAbsoluteUrl(url,u))}`;
   const cssSafe = text => text.replaceAll(/[()'"]/g, c => "%" + c.charCodeAt(0).toString(16));
@@ -1992,7 +2002,7 @@ function UrlInfo(d) {
       ];
       open = l + (n + " " + ax.map(x=>x.trim()).filter(x => x.length >= 4).join(" ")).trim() + r;
       let close = ["link","meta"].includes(n) ? "" : "</script>";
-      let inter = c.slice( c.match(openTag)[0].length, -1 * close.length ).replaceAll("location",randId);
+      let inter = renameLocation(c.slice( c.match(openTag)[0].length, -1 * close.length ));
       m2[i] = open + inter + close;
       consl += m2[i];
 
