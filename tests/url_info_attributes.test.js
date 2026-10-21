@@ -116,3 +116,15 @@ test("http links are still sent through the redirect", () => {
   const out = run(page('<a href="https://other.com/p">o</a>'));
   assert.ok(out.includes('href="http://localhost:8000?R=ABShttps://other.com/p"'), out);
 });
+
+test("a video poster and an object data attribute are rewritten", () => {
+  const out = run(page('<video poster="p.png" src="v.mp4"></video><object data="o.swf"></object>'));
+  assert.ok(out.includes('poster="http://localhost:8000?R=ABSp.png"'), out);
+  assert.ok(out.includes('<object data="http://localhost:8000?R=ABSo.swf"></object>'), out);
+});
+
+test("data-src and a data URL source are not confused with the data attribute", () => {
+  const out = run(page('<img data-src="lazy.png" src="data:image/gif;base64,R0lG">'));
+  assert.ok(out.includes('data-src="http://localhost:8000?R=ABSlazy.png"'), out);
+  assert.ok(out.includes('src="data:image/gif;base64,R0lG"'), out);
+});

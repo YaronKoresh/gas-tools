@@ -1533,7 +1533,7 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
 }
 
 function UrlInfo(d) {
-  const urlAttribute = /(?<=^|:)(?:(href|ref|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
+  const urlAttribute = /(?<=^|:)(?:(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
   const nestedStr = /(&quot;|&#34;|&apos;|&#39;)[^&]*((?:(?!(&quot;|&#34;|&apos;|&#39;))&[^;]+)[^&]*)*(&quot;|&#34;|&apos;|&#39;)/gsm;
   const styles = /<\s*style[^<>]*>(?:(?!<\s*\/\s*style\s*>).)+<\s*\/\s*style\s*>/gsmi;
   const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*)*<\/\s*script\s*>/gsmi;
@@ -1737,7 +1737,7 @@ function UrlInfo(d) {
           if(moreRes.length >= 1){
             x = x.replace(/^(data-)?srcset=/gms,"src=").replace(/^(data-)/gms,"");
           }
-          matched.replace(/^(href|ref|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
+          matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
             if(!u.match(/^(data|javascript|mailto|tel|sms|blob|about):/i)){
               if(ind === arr.length-1){
                 x = x.replace(/=.*/gsm,`="${dom}?redirect${randId}=${encodeURI(RelativeToAbsoluteUrl(url,u))}"`);
@@ -1832,7 +1832,7 @@ function UrlInfo(d) {
             if(moreRes.length >= 1){
               x = x.replace(/^(data-)?srcset=/gms,"src=").replace(/^(data-)/gms,"");
             }
-            matched.replace(/^(href|ref|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").replaceAll(/&(quot|#34|apos|#39);/gms," ").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
+            matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").replaceAll(/&(quot|#34|apos|#39);/gms," ").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
               if(!u.match(/^(data|javascript|mailto|tel|sms|blob|about):/i)){
                 if(ind === arr.length-1){
                   x = x.replace(/=.*/gsm,`="${dom}?redirect${randId}=${encodeURI(RelativeToAbsoluteUrl(url,u))}"`);
@@ -1893,7 +1893,7 @@ function UrlInfo(d) {
             if(moreRes.length >= 1){
               x = x.replace(/^(data-)?srcset=/gms,"src=").replace(/^(data-)/gms,"");
             }
-            matched.replace(/^(href|ref|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").replaceAll(/&(quot|#34|apos|#39);/gms," ").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
+            matched.replace(/^(href|ref|poster|data|(data-)?(src(set)?)|(((\w)+-)*url)|content)=/gms,"").replaceAll(/&(quot|#34|apos|#39);/gms," ").slice(1,-1).replaceAll(/(\s){2,}/gsm," ").split(" ").filter(u => !u.match(/^\d+/gsm)).map((u,ind,arr) => {
               if(!u.match(/^(data|javascript|mailto|tel|sms|blob|about):/i)){
                 if(ind === arr.length-1){
                   x = x.replace(/=.*/gsm,`="${dom}?redirect${randId}=${encodeURI(RelativeToAbsoluteUrl(url,u))}"`);
