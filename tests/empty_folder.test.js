@@ -54,3 +54,22 @@ test("EmptyFolder ignores a leading or doubled slash", () => {
 test("EmptyFolder names the missing folder in its error", () => {
   assert.throws(() => runPath("a/zzz", ["a"]), /zzz/);
 });
+
+test("EmptyFolder refuses an empty path instead of trashing the files of the Drive root", () => {
+  for (const p of ["", "/", "//", undefined, null]) {
+    let trashed = 0;
+    const rootFile = { setTrashed: () => trashed++ };
+    const root = {
+      getFoldersByName: () => ({ hasNext: () => false }),
+      getFiles: () => {
+        let done = false;
+        return { hasNext: () => !done, next: () => ((done = true), rootFile) };
+      },
+    };
+    assert.throws(
+      () => new Function("DriveApp", "p", `${fnSource}; EmptyFolder(p);`)({ getRootFolder: () => root }, p),
+      /needs a folder path/,
+    );
+    assert.strictEqual(trashed, 0);
+  }
+});

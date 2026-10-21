@@ -1303,6 +1303,9 @@ function GetQs(args) {
 }
 
 function EmptyFolder(path) {
+  if (typeof path !== "string" || path.split("/").every(part => part === "")) {
+    throw new Error("EmptyFolder needs a folder path and will not empty the Drive root");
+  }
   let folders = path.split("/");
   let folder = DriveApp.getRootFolder();
   for (let i = 0; i < folders.length; i++) {
