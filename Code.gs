@@ -1660,7 +1660,7 @@ function UrlInfo(d) {
       let l = open.match(tagLeft)[0];
       let r = open.match(tagRight)[0];
       let n = open.replace(l,"").match(/\w+/gsm)[0];
-      let a = open.replace(l,"").replace(r,"").replace(n,"").trim();
+      let a = QuoteAttributes(open.replace(l,"").replace(r,"").replace(n,"").trim());
       let ay = [...(a.match(/\s*[-:\w]+=(('[^']*')|("[^"]*"))/gsm) ?? [])].map( x => {
         return x.trim();
       });
@@ -1750,7 +1750,7 @@ function UrlInfo(d) {
           lastWasScript = true;
           continue;
         }
-        let a = c.replace(l,"").replace(r,"").replace(n,"").trim();
+        let a = QuoteAttributes(c.replace(l,"").replace(r,"").replace(n,"").trim());
         let ay = [...(a.match(/\s*[-:\w]+=(('[^']*')|("[^"]*"))/gsm) ?? [])].map( x => {
           return x.trim();
         });
@@ -1804,7 +1804,7 @@ function UrlInfo(d) {
         let l = c.match(tagLeft)[0];
         let r = c.match(tagRight)[0];
         let n = c.replace(l,"").match(/\w+/gsm)[0];
-        let a = c.replace(l,"").replace(r,"").replace(n,"").trim();
+        let a = QuoteAttributes(c.replace(l,"").replace(r,"").replace(n,"").trim());
         let ay = [...(a.match(/\s*[-:\w]+=(('[^']*')|("[^"]*"))/gsm) ?? [])].map( x => {
           return x.trim();
         });
@@ -1854,6 +1854,13 @@ function UrlInfo(d) {
   consl = consl.replaceAll(/&amp;|&#038;/g,"&").trim();
   console.log(`HTML Output`);
   return Out(consl);
+}
+
+function QuoteAttributes(attributes) {
+  return attributes.replace(/([-:\w]+)=("[^"]*"|'[^']*'|[^\s"'<>`]+)/g, function (all, name, value) {
+    const quoted = value[0] === '"' || value[0] === "'" ? value : `"${value}"`;
+    return name.toLowerCase() + "=" + quoted;
+  });
 }
 
 function RelativeToAbsoluteUrl(url, rel) {
