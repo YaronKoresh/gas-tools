@@ -1114,7 +1114,7 @@ function GetQs(args) {
     if (data != '') {
       data += '&';
     }
-    data += `${args[i - 1]}=${args[i]}`;
+    data += `${encodeURIComponent(args[i - 1])}=${encodeURIComponent(args[i])}`;
   }
   return data;
 }
