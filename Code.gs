@@ -808,11 +808,14 @@ function Stringify(obj) {
   let isUndefined = obj === undefined;
   let isObj = typeof obj === "object";
   let isFunc = typeof obj === "function";
-  let isPromise = typeof obj === "object" && obj.__proto__ && obj.__proto__.toString() === "[object Promise]";
+  let isPromise = typeof obj === "object" && obj instanceof Promise;
+  let isDate = typeof obj === "object" && obj instanceof Date;
   if (isNull) {
     return "null";
   } else if (isUndefined) {
     return "undefined";
+  } else if (isDate) {
+    return JSON.stringify(obj);
   } else if (isPromise) {
     throw new Error("Could not convert Promise into String!")
   } else if (isFunc) {
