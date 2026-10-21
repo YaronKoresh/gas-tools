@@ -1332,22 +1332,36 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
   let completedWorkers = 0;
   const asyncFnString = AsyncFun.toString();
   const workerUrl = createWorker();
+  const workers = new Set();
+  const startTimers = [];
+  let timeoutId = null;
+
+  function cleanup() {
+    clearTimeout(timeoutId);
+    startTimers.forEach(clearTimeout);
+    workers.forEach(w => w.terminate());
+    workers.clear();
+    URL.revokeObjectURL(workerUrl);
+  }
 
   return new Promise((resolve, reject) => {
     if (arr.length === 0) {
+      cleanup();
       resolve([]);
       return;
     }
 
-    const timeoutId = setTimeout(() => {
+    timeoutId = setTimeout(() => {
+      cleanup();
       reject(new Error(`Threads operation timed out after ${timeout} seconds.`));
     }, timeout * 1000);
 
     arr.forEach((item, index) => {
       const currentDelayMs = index * delay * 1000;
 
-      setTimeout(() => {
+      startTimers.push(setTimeout(() => {
         const worker = new Worker(workerUrl);
+        workers.add(worker);
 
         worker.onmessage = function(e) {
           if (e.data.result !== undefined) {
@@ -1359,10 +1373,10 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
 
           completedWorkers++;
           worker.terminate();
+          workers.delete(worker);
 
           if (completedWorkers === arr.length) {
-            clearTimeout(timeoutId);
-            URL.revokeObjectURL(workerUrl);
+            cleanup();
             resolve(results);
           }
         };
@@ -1372,16 +1386,16 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
           results[index] = new Error(`Worker initialization/critical error: ${error.message}`);
           completedWorkers++;
           worker.terminate();
+          workers.delete(worker);
 
           if (completedWorkers === arr.length) {
-            clearTimeout(timeoutId);
-            URL.revokeObjectURL(workerUrl);
+            cleanup();
             resolve(results);
           }
         };
 
         worker.postMessage({ asyncFnString: asyncFnString, deps: deps_txt, data: item });
-      }, currentDelayMs);
+      }, currentDelayMs));
     });
   });
 }
