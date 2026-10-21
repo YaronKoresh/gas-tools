@@ -872,9 +872,14 @@ function Stringify(obj) {
 }
 
 function Parse(str) {
+  const functionSource = /^\s*(async\s+)?(function\b[\s\S]*\}|(\([^()]*\)|[A-Za-z_$][\w$]*)\s*=>[\s\S]+)\s*$/;
   return JSON.parse(str, function (key, val) {
+    if (typeof val !== "string" || !functionSource.test(val)) {
+      return val;
+    }
     try {
-      return typeof eval(val) === 'function' ? eval(val) : val;
+      const fn = eval("(" + val + ")");
+      return typeof fn === "function" ? fn : val;
     } catch (e) {
       return val;
     }
