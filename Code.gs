@@ -1419,6 +1419,9 @@ function UrlInfo(d) {
   let url = schemePattern.test(d) ? d : "http://"+d;
   d = url.replace(schemePattern, "").split(/[\/?#]/)[0];
 
+  const toScriptLiteral = text => JSON.stringify(text).replaceAll("<", "\\u003c").replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
+  const hostLiteral = toScriptLiteral(d);
+
   console.log("Getting final URL");
 
   url = FinalUrl(url);
@@ -1496,10 +1499,10 @@ function UrlInfo(d) {
 			},2000);
       window.${randId} = {
         search: "",
-        host: "${d}",
-        hostname: "${d}",
-        href: "https://${d}/",
-        origin: "https://${d}",
+        host: ${hostLiteral},
+        hostname: ${hostLiteral},
+        href: ${toScriptLiteral("https://" + d + "/")},
+        origin: ${toScriptLiteral("https://" + d)},
         replace: function(...args){},
         reload: function(...args){}
       };
