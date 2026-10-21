@@ -1630,36 +1630,59 @@ function UrlInfo(d) {
   return Out(consl);
 }
 
-function RelativeToAbsoluteUrl(url,rel){
-  if(rel.match(/^(data|javascript):/gsm)){
+function RelativeToAbsoluteUrl(url, rel) {
+  if (rel.match(/^(data|javascript):/gsm)) {
     return rel;
   }
+  let internalUrl = rel.replaceAll(/&amp;|&#038;/gms, "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").trim();
+  if (/^[A-Za-z][A-Za-z0-9+.\-]*:/.test(internalUrl)) {
+    return internalUrl;
+  }
   let dom = url.match(domain)[0];
-  let internalUrl = rel.replaceAll(/&amp;|&#038;/gms,"&").replaceAll("&lt;","<").replaceAll("&gt;",">").trim();
-  if(internalUrl.startsWith("//")){
-    internalUrl = "http:"+internalUrl;
-  } else if(internalUrl.startsWith("/")){
-    internalUrl = dom+internalUrl;
-  } else if(internalUrl.startsWith("?")){
-    internalUrl = url.split("?")[0]+internalUrl;
-  } else if(internalUrl.startsWith("#")){
-    internalUrl = url.split("#")[0]+internalUrl;
-  } else if(!internalUrl.includes("://")){
-    let rest = url.slice(dom.length).split("/");
-    let restPath = "";
-    if(
-      ["?","#"].includes(rest[rest.length-1].slice(0,1)) ||
-      rest[rest.length-1].trim() === ""
-    ){
-      restPath = rest.slice(0,-1).join("/") + "/";
-      internalUrl = dom + restPath + internalUrl + rest[rest.length-1];
-    } else if( rest[rest.length-1].includes(".") ){
-      restPath = rest.slice(0,-1).join("/") + "/";
-      internalUrl = dom + restPath + internalUrl;
+  let scheme = (dom.match(/^[A-Za-z][A-Za-z0-9+.\-]*:/) || ["http:"])[0];
+  if (internalUrl.startsWith("//")) {
+    return scheme + internalUrl;
+  }
+  let rest = url.slice(dom.length);
+  let hashAt = rest.indexOf("#");
+  let withoutHash = hashAt === -1 ? rest : rest.slice(0, hashAt);
+  let queryAt = withoutHash.indexOf("?");
+  let basePath = queryAt === -1 ? withoutHash : withoutHash.slice(0, queryAt);
+  if (internalUrl.startsWith("/")) {
+    return dom + internalUrl;
+  }
+  if (internalUrl.startsWith("?")) {
+    return dom + basePath + internalUrl;
+  }
+  if (internalUrl.startsWith("#")) {
+    return dom + withoutHash + internalUrl;
+  }
+  let suffixAt = internalUrl.search(/[?#]/);
+  let relPath = suffixAt === -1 ? internalUrl : internalUrl.slice(0, suffixAt);
+  let suffix = suffixAt === -1 ? "" : internalUrl.slice(suffixAt);
+  let segments = basePath.split("/").slice(0, -1);
+  let relSegments = relPath.split("/");
+  for (let i = 0; i < relSegments.length; i++) {
+    let segment = relSegments[i];
+    let isLast = i === relSegments.length - 1;
+    if (segment === "..") {
+      if (segments.length > 1) {
+        segments.pop();
+      }
+      if (isLast) {
+        segments.push("");
+      }
+    } else if (segment === ".") {
+      if (isLast) {
+        segments.push("");
+      }
     } else {
-      restPath = rest.join("/") + "/";
-      internalUrl = dom + restPath + internalUrl;
+      segments.push(segment);
     }
   }
-  return internalUrl;
+  let path = segments.join("/");
+  if (!path.startsWith("/")) {
+    path = "/" + path;
+  }
+  return dom + path + suffix;
 }
