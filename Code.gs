@@ -1,6 +1,13 @@
 const domain = /^(?:(?:[A-Za-z][A-Za-z0-9+.\-]*:)?\/\/)?[^\/?#]*/;
 const cache = CacheService.getScriptCache();
-const uuid_charset = String.fromCodePoint(...Range(6016, 55291)).split("").filter(c => /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(c)).join("");
+let uuid_charset_cache = null;
+
+function UuidCharset() {
+  if (uuid_charset_cache === null) {
+    uuid_charset_cache = String.fromCodePoint(...Range(6016, 55291)).split("").filter(c => /^[\p{L}\p{N}\p{P}\p{S}]$/u.test(c));
+  }
+  return uuid_charset_cache;
+}
 
 const pdf_lib_url = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js";
 
@@ -884,7 +891,7 @@ function Alert(msg) {
 }
 
 function Uuid(len) {
-  const charset = uuid_charset.split("");
+  const charset = UuidCharset();
   len = Math.max(1, len);
   let ret = charset[Random(0, charset.length - 1)];
   for (let i = 0; i < len - 1; i++) {

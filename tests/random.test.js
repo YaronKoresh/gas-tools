@@ -5,7 +5,7 @@ const path = require("node:path");
 
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const Random = new Function(`${source.match(/function Random[\s\S]*?\n}\n/)[0]}; return Random;`)();
-const uuidSource = source.match(/function Uuid[\s\S]*?\n}\n/)[0];
+const uuidSource = source.match(/function Uuid\([\s\S]*?\n}\n/)[0];
 
 test("Random includes both bounds and stays inside them", () => {
   const seen = new Set();
@@ -37,8 +37,8 @@ test("Random with reversed bounds still returns a value in range", () => {
 });
 
 test("Uuid can use the last character of its charset", () => {
-  const chars = "abc";
-  const Uuid = new Function("Random", "uuid_charset", `${uuidSource}; return Uuid;`)(Random, chars);
+  const chars = ["a", "b", "c"];
+  const Uuid = new Function("Random", "UuidCharset", `${uuidSource}; return Uuid;`)(Random, () => chars);
   const seen = new Set();
   for (let i = 0; i < 300; i++) for (const ch of Uuid(5)) seen.add(ch);
   assert.deepStrictEqual([...seen].sort(), ["a", "b", "c"]);
