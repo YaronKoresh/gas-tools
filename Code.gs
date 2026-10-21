@@ -409,21 +409,25 @@ async function PhotoDataUrl() {
     }
 
     let id = await ExportCurrentCellPhoto();
-    ShareFile(id);
+    try {
+      ShareFile(id);
 
-    let url = DriveIdToUrl(id);
-    let type = GetType(url, headers);
-    if (
-      type.split("/")[0] != "image"
-    ) {
-      return;
+      let url = DriveIdToUrl(id);
+      let type = GetType(url, headers);
+      if (
+        !type || type.split("/")[0] != "image"
+      ) {
+        return;
+      }
+      let name = "temp." + type.split("/")[1];
+      let content = ParseUrlContent(url, headers);
+      let blob = PackContent(name, type, content);
+
+      let dataUrl = `data:${type};base64,${Utilities.base64Encode(blob.getBytes())}`;
+      return dataUrl;
+    } finally {
+      TrashFile(id);
     }
-    let name = "temp." + type.split("/")[1];
-    let content = ParseUrlContent(url, headers);
-    let blob = PackContent(name, type, content);
-
-    let dataUrl = `data:${type};base64,${Utilities.base64Encode(blob.getBytes())}`;
-    return dataUrl;
   } finally {
     lock.releaseLock();
   }
