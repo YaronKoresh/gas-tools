@@ -1168,7 +1168,14 @@ function EmptyFolder(path) {
   let folders = path.split("/");
   let folder = DriveApp.getRootFolder();
   for (let i = 0; i < folders.length; i++) {
-    folder = folder.getFoldersByName(folders[i]).next();
+    if (folders[i] === "") {
+      continue;
+    }
+    let found = folder.getFoldersByName(folders[i]);
+    if (!found.hasNext()) {
+      throw new Error("Folder not found: " + folders[i]);
+    }
+    folder = found.next();
   }
   let files = folder.getFiles();
   while (files.hasNext()) {
