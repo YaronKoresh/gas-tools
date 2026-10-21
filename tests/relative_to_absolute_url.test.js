@@ -50,3 +50,18 @@ for (const [base, rel, want] of hostCases) {
     assert.strictEqual(resolve(base, rel), want);
   });
 }
+
+const dotCases = [
+  ["https://a.com/x/z.html", "", "https://a.com/x/z.html"],
+  ["https://a.com/x/z.html?q=1#h", "", "https://a.com/x/z.html?q=1"],
+  ["https://a.com/p", "/w/../v", "https://a.com/v"],
+  ["https://a.com/p", "/a/./b/../c?x=1", "https://a.com/a/c?x=1"],
+  ["https://a.com/p", "/../v", "https://a.com/v"],
+  ["https://a.com", "w/../v", "https://a.com/v"],
+  ["https://a.com/x/y/z", "/w/..", "https://a.com/"],
+];
+for (const [base, rel, want] of dotCases) {
+  test(`removes dot segments of ${JSON.stringify(rel)} against ${base}`, () => {
+    assert.strictEqual(resolve(base, rel), want);
+  });
+}

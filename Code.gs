@@ -1949,8 +1949,8 @@ function RelativeToAbsoluteUrl(url, rel) {
   let withoutHash = hashAt === -1 ? rest : rest.slice(0, hashAt);
   let queryAt = withoutHash.indexOf("?");
   let basePath = queryAt === -1 ? withoutHash : withoutHash.slice(0, queryAt);
-  if (internalUrl.startsWith("/")) {
-    return dom + internalUrl;
+  if (internalUrl === "") {
+    return dom + withoutHash;
   }
   if (internalUrl.startsWith("?")) {
     return dom + basePath + internalUrl;
@@ -1961,11 +1961,15 @@ function RelativeToAbsoluteUrl(url, rel) {
   let suffixAt = internalUrl.search(/[?#]/);
   let relPath = suffixAt === -1 ? internalUrl : internalUrl.slice(0, suffixAt);
   let suffix = suffixAt === -1 ? "" : internalUrl.slice(suffixAt);
-  let segments = basePath.split("/").slice(0, -1);
-  let relSegments = relPath.split("/");
-  for (let i = 0; i < relSegments.length; i++) {
-    let segment = relSegments[i];
-    let isLast = i === relSegments.length - 1;
+  let merged = relPath.startsWith("/") ? relPath : basePath.slice(0, basePath.lastIndexOf("/") + 1) + relPath;
+  if (!merged.startsWith("/")) {
+    merged = "/" + merged;
+  }
+  let segments = [];
+  let mergedSegments = merged.split("/");
+  for (let i = 0; i < mergedSegments.length; i++) {
+    let segment = mergedSegments[i];
+    let isLast = i === mergedSegments.length - 1;
     if (segment === "..") {
       if (segments.length > 1) {
         segments.pop();
@@ -1981,9 +1985,5 @@ function RelativeToAbsoluteUrl(url, rel) {
       segments.push(segment);
     }
   }
-  let path = segments.join("/");
-  if (!path.startsWith("/")) {
-    path = "/" + path;
-  }
-  return dom + path + suffix;
+  return dom + segments.join("/") + suffix;
 }
