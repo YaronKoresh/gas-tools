@@ -899,7 +899,7 @@ function Stringify(obj) {
   if (isNull) {
     return "null";
   } else if (isUndefined) {
-    return "undefined";
+    return "null";
   } else if (isDate) {
     return JSON.stringify(obj);
   } else if (isPromise) {
@@ -920,7 +920,7 @@ function Stringify(obj) {
       } else if (val === null) {
         ret += "null";
       } else if (val === undefined) {
-        ret += "undefined";
+        ret += "null";
       } else if (typeof val === 'object') {
         ret += Stringify(val);
       } else {
@@ -933,23 +933,26 @@ function Stringify(obj) {
   } else {
     let keys = Object.keys(obj);
     let len = keys.length;
+    let written = 0;
     for (let i = 0; i < len; i++) {
       let key = keys[i];
-      ret += JSON.stringify(key) + ":";
       let val = obj[key];
+      if (val === undefined) {
+        continue;
+      }
+      if (written > 0) {
+        ret += ",";
+      }
+      written++;
+      ret += JSON.stringify(key) + ":";
       if (typeof val === 'function') {
         ret += val.toString().replace(/^function ([a-bA-B0-9_]){1,}\(\) \{ \[native code\] \}$/, "null");
       } else if (val === null) {
         ret += "null";
-      } else if (val === undefined) {
-        ret += "undefined";
       } else if (typeof val === 'object') {
         ret += Stringify(val);
       } else {
         ret += JSON.stringify(val);
-      }
-      if (i < len - 1) {
-        ret += ",";
       }
     }
   }
