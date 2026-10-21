@@ -6,12 +6,16 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (re) => source.match(re)[0];
 
-function run(reply = { code: 200, body: '{"image_url":"http://x/y.png"}' }) {
+function run(reply = { code: 200, body: '{"image_url":"http://x/y.png"}' }, shareThrows = false) {
   const state = { set: [], released: 0, trashed: [] };
   const cell = { setValue: (v) => state.set.push(v) };
   const env = {
     ExportCurrentCellPhoto: async () => "img",
-    ShareFile() {},
+    ShareFile() {
+      if (shareThrows) {
+        throw new Error("sharing failed");
+      }
+    },
     DriveIdToUrl: (id) => `url-${id}`,
     TrashFile: (id) => state.trashed.push(id),
     UrlFetchApp: { fetch: () => ({ getContentText: () => reply.body, getResponseCode: () => reply.code }) },
@@ -65,4 +69,17 @@ test("PhotoTemp throws and leaves the cell alone when the service rejects the im
   assert.deepStrictEqual(state.set, []);
   assert.deepStrictEqual(state.trashed, ["img"]);
   assert.strictEqual(state.released, 0);
+});
+
+test("PhotoTemp trashes the temporary image when sharing it fails", async () => {
+  const { PhotoTemp, state } = run(undefined, true);
+  const orig = console.log;
+  console.log = () => {};
+  try {
+    await assert.rejects(() => PhotoTemp("key"), /sharing failed/);
+  } finally {
+    console.log = orig;
+  }
+  assert.deepStrictEqual(state.trashed, ["img"]);
+  assert.deepStrictEqual(state.set, []);
 });

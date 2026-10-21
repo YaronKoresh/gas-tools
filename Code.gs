@@ -529,27 +529,28 @@ function TrashFile(id) {
 async function PhotoTemp(apiLayerApiKey) {
   let cell = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getActiveCell();
   let imgId = await ExportCurrentCellPhoto();
-  ShareFile(imgId);
-
-  let url = DriveIdToUrl(imgId);
-
-  let options = {
-    'followRedirects': true,
-    'muteHttpExceptions': true,
-    'method': 'post',
-    'contentType': 'application/json',
-    'payload': JSON.stringify({
-      'url': url,
-      'delay': 1,
-      'quality': 99
-    }),
-    'headers': {
-      'apikey': apiLayerApiKey
-    }
-  };
 
   let res;
   try {
+    ShareFile(imgId);
+
+    let url = DriveIdToUrl(imgId);
+
+    let options = {
+      'followRedirects': true,
+      'muteHttpExceptions': true,
+      'method': 'post',
+      'contentType': 'application/json',
+      'payload': JSON.stringify({
+        'url': url,
+        'delay': 1,
+        'quality': 99
+      }),
+      'headers': {
+        'apikey': apiLayerApiKey
+      }
+    };
+
     res = UrlFetchApp.fetch(`https://api.apilayer.com/image_upload/url`, options);
   } finally {
     TrashFile(imgId);
