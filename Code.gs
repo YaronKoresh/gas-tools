@@ -486,10 +486,11 @@ async function PhotoTemp(apiLayerApiKey) {
   TrashFile(imgId);
 
   let l = Lock();
-
-  cell.setValue(obj['image_url']);
-
-  Unlock(l);
+  try {
+    cell.setValue(obj['image_url']);
+  } finally {
+    Unlock(l);
+  }
 }
 
 function BlobToDataUrl(blob) {
@@ -576,8 +577,11 @@ async function CurrentPhotoIntoUrl(bitlyApiKey, bitlyGuid) {
   ShareFile(id);
   let url = ShortUrl(bitlyApiKey, bitlyGuid, DriveIdToUrl(id));
   let l = Lock();
-  cell.setValue(url);
-  Unlock(l);
+  try {
+    cell.setValue(url);
+  } finally {
+    Unlock(l);
+  }
   return url;
 }
 
@@ -617,8 +621,11 @@ function InsertImage(sheet, cell, id) {
   cell = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet).getRange(cell);
 
   let l = Lock();
-  cell.setValue(image);
-  Unlock(l);
+  try {
+    cell.setValue(image);
+  } finally {
+    Unlock(l);
+  }
 }
 
 function ExportPdf(sheet = null, start = "A1", end = null, options = {}) {
