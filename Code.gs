@@ -67,21 +67,29 @@ function Range(min, max) {
 }
 
 function WriteToCache(name, key, value, time = 21600) {
-  if (!cache.get(name)) {
-    let obj = { [key]: value };
-    cache.put(name, Stringify(obj), time);
-  } else {
-    let obj = Parse(cache.get(name));
-    obj[key] = value;
-    cache.put(name, Stringify(obj), time);
+  let obj = {};
+  try {
+    const stored = Parse(cache.get(name));
+    if (stored !== null && typeof stored === "object") {
+      obj = stored;
+    }
+  } catch (e) {
+    obj = {};
   }
+  obj[key] = value;
+  cache.put(name, Stringify(obj), time);
 }
 
 function ReadFromCache(name, key) {
-  if (cache.get(name) == null) {
+  const text = cache.get(name);
+  if (text == null) {
     return null;
-  } else {
-    return Parse(cache.get(name))[key] ?? null;
+  }
+  try {
+    const stored = Parse(text);
+    return stored !== null && typeof stored === "object" ? stored[key] ?? null : null;
+  } catch (e) {
+    return null;
   }
 }
 
