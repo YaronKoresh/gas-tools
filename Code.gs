@@ -2022,10 +2022,10 @@ function UrlInfo(d) {
         let l = c.match(tagLeft)[0];
         let r = c.match(tagRight)[0];
         let n = c.replace(l,"").match(/\w+/gsm)[0].toLowerCase();
-        if("link" === n){
+        if("link" === n || "meta" === n){
           continue;
         }
-        if("script" === n){
+        if("script" === n || "style" === n){
           lastWasScript = true;
           continue;
         }
@@ -2072,7 +2072,7 @@ function UrlInfo(d) {
       } else if(c.match(closeTag)){
         let l = c.match(tagLeft)[0];
         let n = c.replace(l,"").match(/\w+/gsm)[0].toLowerCase();
-        if("script" === n){
+        if("script" === n || "style" === n){
           lastWasScript = false;
           continue;
         }
