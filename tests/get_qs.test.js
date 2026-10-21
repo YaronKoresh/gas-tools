@@ -21,3 +21,11 @@ test("GetQs keeps simple pairs unchanged", () => {
 test("GetQs gives an empty string for an empty list", () => {
   assert.strictEqual(GetQs([]), "");
 });
+
+test("GetQs leaves out pairs whose value is undefined or null", () => {
+  assert.strictEqual(GetQs(["a", undefined, "b", null, "c", 1]), "c=1");
+});
+
+test("GetQs keeps false, zero and empty text", () => {
+  assert.strictEqual(GetQs(["a", false, "b", 0, "c", ""]), "a=false&b=0&c=");
+});

@@ -1260,6 +1260,9 @@ function ObjectToQueryString(obj) {
 function GetQs(args) {
   var data = '';
   for (var i = 1; i < args.length; i += 2) {
+    if (args[i] === undefined || args[i] === null) {
+      continue;
+    }
     if (data != '') {
       data += '&';
     }
