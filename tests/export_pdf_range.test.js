@@ -6,11 +6,11 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (re) => source.match(re)[0];
 
-function run(start, end) {
+function run(start, end, sheetName = "S") {
   const state = { url: null };
   const env = {
     SpreadsheetApp: {
-      getActiveSpreadsheet: () => ({ getSheetByName: () => ({ getSheetId: () => 7 }), getId: () => "SS" }),
+      getActiveSpreadsheet: () => ({ getSheetByName: (n) => (n === "S" ? { getSheetId: () => 7 } : null), getId: () => "SS" }),
       getActiveSheet: () => ({ getSheetId: () => 7 }),
     },
     ScriptApp: { getOAuthToken: () => "tok" },
@@ -38,7 +38,7 @@ function run(start, end) {
   const orig = console.log;
   console.log = () => {};
   try {
-    ExportPdf("S", start, end);
+    ExportPdf(sheetName, start, end);
   } finally {
     console.log = orig;
   }
@@ -60,4 +60,12 @@ test("ExportPdf default end covers all columns and rows", () => {
 
 test("ExportPdf rejects a malformed location", () => {
   assert.throws(() => run("1A", "B2"), /Invalid cell location/);
+});
+
+test("ExportPdf names the sheet that does not exist", () => {
+  assert.throws(() => run("A1", "B2", "Missing"), /Sheet not found: Missing/);
+});
+
+test("ExportPdf uses the active sheet when no name is given", () => {
+  assert.deepStrictEqual(run("A1", "B2", null), { c1: "0", r1: "0", c2: "2", r2: "2" });
 });

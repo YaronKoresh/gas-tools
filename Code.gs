@@ -646,7 +646,11 @@ function InsertImage(sheet, cell, id) {
 
 function ExportPdf(sheet = null, start = "A1", end = null, options = {}) {
 
+  let sheetName = sheet;
   sheet = !!sheet ? SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet) : SpreadsheetApp.getActiveSheet();
+  if (!sheet) {
+    throw new Error("Sheet not found: " + sheetName);
+  }
   end = end ?? ColumnToLetter(GetColumnsCount(sheet)) + GetRowsCount(sheet);
   let startCell = ParseCellLocation(start);
   let endCell = ParseCellLocation(end);
