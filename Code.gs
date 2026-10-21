@@ -951,7 +951,7 @@ function Random(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function Stringify(obj, asCode = false) {
+function Stringify(obj, asCode = false, ancestors = []) {
   const FunctionSource = function (fn) {
     const text = fn.toString();
     if (/\{\s*\[native code\]\s*\}\s*$/.test(text)) {
@@ -968,6 +968,12 @@ function Stringify(obj, asCode = false) {
   const Nested = function (fn) {
     const text = FunctionSource(fn);
     return text === "null" || asCode ? text : JSON.stringify(text);
+  };
+  const Descend = function () {
+    if (ancestors.includes(obj)) {
+      throw new Error("Could not convert a circular structure into String!");
+    }
+    return [...ancestors, obj];
   };
   const Primitive = function (val) {
     if (typeof val === "symbol") {
@@ -1005,9 +1011,11 @@ function Stringify(obj, asCode = false) {
   } else if (asCode && isRegExp) {
     return `new RegExp(${JSON.stringify(obj.source)}, ${JSON.stringify(obj.flags)})`;
   } else if (asCode && isMap) {
-    return `new Map([${[...obj].map(pair => `[${Stringify(pair[0], true)},${Stringify(pair[1], true)}]`).join(",")}])`;
+    const inner = Descend();
+    return `new Map([${[...obj].map(pair => `[${Stringify(pair[0], true, inner)},${Stringify(pair[1], true, inner)}]`).join(",")}])`;
   } else if (asCode && isSet) {
-    return `new Set([${[...obj].map(item => Stringify(item, true)).join(",")}])`;
+    const inner = Descend();
+    return `new Set([${[...obj].map(item => Stringify(item, true, inner)).join(",")}])`;
   } else if (isDate || isBoxed) {
     return JSON.stringify(obj);
   } else if (isPromise) {
@@ -1015,6 +1023,7 @@ function Stringify(obj, asCode = false) {
   } else if (isFunc) {
     return FunctionSource(obj);
   } else if (isObj) {
+    ancestors = Descend();
     ret += isArr ? "[" : "{";
   } else {
     return Primitive(obj);
@@ -1030,7 +1039,7 @@ function Stringify(obj, asCode = false) {
       } else if (val === undefined) {
         ret += "null";
       } else if (typeof val === 'object') {
-        ret += Stringify(val, asCode);
+        ret += Stringify(val, asCode, ancestors);
       } else {
         ret += Primitive(val);
       }
@@ -1058,7 +1067,7 @@ function Stringify(obj, asCode = false) {
       } else if (val === null) {
         ret += "null";
       } else if (typeof val === 'object') {
-        ret += Stringify(val, asCode);
+        ret += Stringify(val, asCode, ancestors);
       } else {
         ret += Primitive(val);
       }
