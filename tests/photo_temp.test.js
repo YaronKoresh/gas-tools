@@ -6,7 +6,7 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (re) => source.match(re)[0];
 
-function run() {
+function run(reply = { code: 200, body: '{"image_url":"http://x/y.png"}' }) {
   const state = { set: [], released: 0, trashed: [] };
   const cell = { setValue: (v) => state.set.push(v) };
   const env = {
@@ -14,7 +14,7 @@ function run() {
     ShareFile() {},
     DriveIdToUrl: (id) => `url-${id}`,
     TrashFile: (id) => state.trashed.push(id),
-    UrlFetchApp: { fetch: () => ({ getContentText: () => '{"image_url":"http://x/y.png"}' }) },
+    UrlFetchApp: { fetch: () => ({ getContentText: () => reply.body, getResponseCode: () => reply.code }) },
     SpreadsheetApp: {
       getActiveSpreadsheet: () => ({ getActiveSheet: () => ({ getActiveCell: () => cell }) }),
       flush() {},
@@ -51,4 +51,18 @@ test("PhotoTemp releases the lock it took and trashes the temporary image", asyn
   }
   assert.strictEqual(state.released, 1);
   assert.deepStrictEqual(state.trashed, ["img"]);
+});
+
+test("PhotoTemp throws and leaves the cell alone when the service rejects the image", async () => {
+  const { PhotoTemp, state } = run({ code: 401, body: '{"message":"Invalid API key"}' });
+  const orig = console.log;
+  console.log = () => {};
+  try {
+    await assert.rejects(() => PhotoTemp("secret-key"), (e) => /401.*Invalid API key/.test(e.message) && !e.message.includes("secret-key"));
+  } finally {
+    console.log = orig;
+  }
+  assert.deepStrictEqual(state.set, []);
+  assert.deepStrictEqual(state.trashed, ["img"]);
+  assert.strictEqual(state.released, 0);
 });

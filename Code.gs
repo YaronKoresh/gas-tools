@@ -482,11 +482,24 @@ async function PhotoTemp(apiLayerApiKey) {
     }
   };
 
-  let res = UrlFetchApp.fetch(`https://api.apilayer.com/image_upload/url`, options);
+  let res;
+  try {
+    res = UrlFetchApp.fetch(`https://api.apilayer.com/image_upload/url`, options);
+  } finally {
+    TrashFile(imgId);
+  }
   console.log(res.getContentText());
-  let obj = JSON.parse(res.getContentText());
+  let obj;
+  try {
+    obj = JSON.parse(res.getContentText());
+  } catch (e) {
+    obj = {};
+  }
 
-  TrashFile(imgId);
+  if (!obj || !obj['image_url']) {
+    const reason = (obj && obj['message']) || res.getContentText();
+    throw new Error(`PhotoTemp failed (${res.getResponseCode()}): ${reason}`);
+  }
 
   let l = Lock();
   try {
