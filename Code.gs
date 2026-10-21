@@ -1505,7 +1505,13 @@ function SaveUrl(url, path = "/") {
   let folders = parts.slice(0, parts.length - 1);
   let name = parts[parts.length - 1];
   if (name === "") {
-    name = url.split(/[?#]/)[0].split("/").pop() || "file";
+    const withoutSuffix = url.split(/[?#]/)[0].replace(/^(?:[A-Za-z][A-Za-z0-9+.\-]*:)?\/\/[^\/]*/, "");
+    name = withoutSuffix.split("/").pop();
+    try {
+      name = decodeURIComponent(name);
+    } catch (e) {
+    }
+    name = name.replaceAll("/", "-") || "file";
   }
   let type = GetType(url);
   if (type === null) {
