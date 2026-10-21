@@ -663,7 +663,11 @@ function GetScriptIdentityHeaders() {
 function InsertImage(sheet, cell, id) {
 
   let image = SpreadsheetApp.newCellImage().setSourceUrl("https://drive.google.com/uc?id=" + id).build();
-  cell = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet).getRange(cell);
+  let target = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet);
+  if (!target) {
+    throw new Error("Sheet not found: " + sheet);
+  }
+  cell = target.getRange(cell);
 
   let l = Lock();
   try {
