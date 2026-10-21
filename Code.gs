@@ -987,7 +987,8 @@ function ParseIdContent(id) {
 }
 
 function DriveUrlToId(url) {
-  return url.replace("https://drive.google.com/file/d/", "").replace("/view?usp=drivesdk", "").replace("/view?usp=drive_link", "");
+  const match = /\/d\/([-\w]+)/.exec(url) || /[?&]id=([-\w]+)/.exec(url);
+  return match ? match[1] : url;
 }
 
 function DriveIdToUrl(id) {
