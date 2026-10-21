@@ -1535,16 +1535,45 @@ function UrlInfo(d) {
 
   console.log("Generating HTML for cloning...");
 
+  const markup = str;
   str = str.split("");
   let isText = "";
+  let inTag = false;
+  let rawTag = null;
+  let tagStart = 0;
   for( let i = 0 ; i < str.length ; i++ ){
     let c = str[i];
-    if( "'" === c ){
-      isText = isText.endsWith("1") ? isText.replace("1","") : !isText.includes("1") ? isText+"1" : isText;
-    } else if( '"' === c ){
-      isText = isText.endsWith("2") ? isText.replace("2","") : !isText.includes("2") ? isText+"2" : isText;
+    if( !inTag && rawTag === null ){
+      if( "<" === c ){
+        if( /^<\/?[A-Za-z]/.test(markup.slice(i,i+3)) ){
+          inTag = true;
+          tagStart = i;
+        } else {
+          str[i] = "&lt;";
+        }
+      }
+      continue;
+    }
+    if( rawTag !== null && "<" === c && new RegExp("^<\\/" + rawTag + "[\\s/>]","i").test(markup.slice(i,i+rawTag.length+3)) ){
+      rawTag = null;
+      isText = "";
+      inTag = true;
+      tagStart = i;
+      continue;
+    }
+    if( "\\" === c && rawTag !== null ){
+      i++;
+    } else if( "'" === c || '"' === c ){
+      isText = isText === "" ? c : isText === c ? "" : isText;
     } else if(["<",">"].includes(c)){
       str[i] = isText.length===0 ? c : c==="<" ? "&lt;" : "&gt;";
+      if( ">" === c && isText.length === 0 && inTag ){
+        inTag = false;
+        const opened = /^<([A-Za-z]+)/.exec(markup.slice(tagStart,i));
+        if( opened && ["script","style"].includes(opened[1].toLowerCase()) ){
+          rawTag = opened[1].toLowerCase();
+        }
+      }
     }
   }
   str = str.join("");
