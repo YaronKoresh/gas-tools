@@ -1043,9 +1043,134 @@ function Stringify(obj) {
 }
 
 function Parse(str) {
+  const isOneFunction = function (src) {
+    const text = src.trim();
+    const isArrow = !/^(async\s+)?function\b/.test(text);
+    const closers = { ")": "(", "]": "[", "}": "{" };
+    const stack = [];
+    let regexAllowed = true;
+    let i = 0;
+    while (i < text.length) {
+      const c = text[i];
+      const two = text.slice(i, i + 2);
+      if (two === "//") {
+        const nl = text.indexOf("\n", i);
+        i = nl === -1 ? text.length : nl + 1;
+      } else if (two === "/*") {
+        const end = text.indexOf("*/", i + 2);
+        if (end === -1) {
+          return false;
+        }
+        i = end + 2;
+      } else if (c === "'" || c === '"') {
+        i++;
+        while (i < text.length && text[i] !== c) {
+          i += text[i] === "\\" ? 2 : 1;
+        }
+        if (i >= text.length) {
+          return false;
+        }
+        i++;
+        regexAllowed = false;
+      } else if (c === "`") {
+        stack.push("`");
+        i++;
+        while (stack[stack.length - 1] === "`") {
+          if (i >= text.length) {
+            return false;
+          }
+          if (text[i] === "\\") {
+            i += 2;
+          } else if (text[i] === "`") {
+            stack.pop();
+            i++;
+          } else if (text.slice(i, i + 2) === "${") {
+            stack.push("${");
+            i += 2;
+            break;
+          } else {
+            i++;
+          }
+        }
+        regexAllowed = false;
+      } else if (c === "/" && regexAllowed) {
+        i++;
+        let inClass = false;
+        while (i < text.length && (inClass || text[i] !== "/")) {
+          if (text[i] === "\\") {
+            i++;
+          } else if (text[i] === "[") {
+            inClass = true;
+          } else if (text[i] === "]") {
+            inClass = false;
+          }
+          i++;
+        }
+        if (i >= text.length) {
+          return false;
+        }
+        i++;
+        regexAllowed = false;
+      } else if (c === "(" || c === "[" || c === "{") {
+        stack.push(c);
+        i++;
+        regexAllowed = true;
+      } else if (c === ")" || c === "]" || c === "}") {
+        if (c === "}" && stack[stack.length - 1] === "${") {
+          stack.pop();
+          i++;
+          while (stack[stack.length - 1] === "`") {
+            if (i >= text.length) {
+              return false;
+            }
+            if (text[i] === "\\") {
+              i += 2;
+            } else if (text[i] === "`") {
+              stack.pop();
+              i++;
+            } else if (text.slice(i, i + 2) === "${") {
+              stack.push("${");
+              i += 2;
+              break;
+            } else {
+              i++;
+            }
+          }
+          regexAllowed = false;
+          continue;
+        }
+        if (stack.pop() !== closers[c]) {
+          return false;
+        }
+        i++;
+        if (c === "}" && stack.length === 0 && i < text.length) {
+          return false;
+        }
+        regexAllowed = c === "}";
+      } else if ((c === "," || c === ";") && stack.length === 0 && isArrow) {
+        return false;
+      } else if (/[\w$]/.test(c)) {
+        let j = i;
+        while (j < text.length && /[\w$]/.test(text[j])) {
+          j++;
+        }
+        regexAllowed = /^(return|typeof|in|of|new|delete|void|throw|case|do|else|instanceof|yield|await)$/.test(text.slice(i, j));
+        i = j;
+      } else {
+        if (!/\s/.test(c)) {
+          regexAllowed = c !== ")" && c !== "]";
+        }
+        i++;
+      }
+    }
+    return stack.length === 0;
+  };
   const functionSource = /^\s*(async\s+)?(function\b[\s\S]*\}|(\([^()]*\)|[A-Za-z_$][\w$]*)\s*=>[\s\S]+)\s*$/;
   return JSON.parse(str, function (key, val) {
     if (typeof val !== "string" || !functionSource.test(val)) {
+      return val;
+    }
+    if (!isOneFunction(val)) {
       return val;
     }
     try {
