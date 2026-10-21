@@ -6,10 +6,10 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "Code.gs"), "utf8");
 const grab = (name) => source.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}\\n`))[0];
 
-function load({ driveThrows = false } = {}) {
+function load({ driveThrows = false, dataColumn = [[""]] } = {}) {
   const state = { released: 0, nowCalls: 0, writes: [] };
   const rangeOf = (sheetName) => (a) => ({
-    getValues: () => [[""]],
+    getValues: () => (sheetName === "data" ? dataColumn : [[""]]),
     setValue: (v) => state.writes.push([sheetName, a, v]),
     setValues: (v) => state.writes.push([sheetName, a, v]),
   });
@@ -69,4 +69,18 @@ test("AddToDatabase reads the clock once and releases the lock after writing", (
   const dataWrites = state.writes.filter((w) => w[0] === "data").map((w) => w[2]);
   assert.ok(dataWrites.includes("k"));
   assert.ok(dataWrites.includes('{"a":1}'));
+});
+
+test("AddToDatabase writes after the last used row even when values repeat", () => {
+  const { AddToDatabase, state } = load({ dataColumn: [["5"], ["5"]] });
+  AddToDatabase("db", "Logs", "k", 1);
+  const addresses = state.writes.filter((w) => w[0] === "data").map((w) => w[1]);
+  assert.deepStrictEqual(addresses, ["A3:A3", "B3:B3", "C3:C3"]);
+});
+
+test("AddToDatabase writes to the first row of an empty sheet", () => {
+  const { AddToDatabase, state } = load({ dataColumn: [[""], [""]] });
+  AddToDatabase("db", "Logs", "k", 1);
+  const addresses = state.writes.filter((w) => w[0] === "data").map((w) => w[1]);
+  assert.deepStrictEqual(addresses, ["A1:A1", "B1:B1", "C1:C1"]);
 });

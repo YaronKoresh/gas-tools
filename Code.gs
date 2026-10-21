@@ -380,16 +380,12 @@ function AddToDatabase(dbName, sheetName, key, value) {
       }
     }
 
-    let next_row = Unique(current_sheet.getRange(`A1:A`).getValues(), 1).length + 1;
+    let next_row = current_sheet.getRange(`A1:A`).getValues().filter(row => (row[0] ?? "").toString().length >= 1).length + 1;
     current_sheet.getRange(`A${next_row}:A${next_row}`).setValue(ms.toString());
     current_sheet.getRange(`B${next_row}:B${next_row}`).setValue(key.toString());
     current_sheet.getRange(`C${next_row}:C${next_row}`).setValue(Stringify(value));
   } finally {
     Unlock(k);
-  }
-
-  function Unique(arr, min_length = 0) {
-    return [...new Set(arr.map(v => v[0]).filter(v => v.toString().length >= min_length))];
   }
 }
 
