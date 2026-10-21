@@ -1528,7 +1528,7 @@ function Threads(AsyncFun, arr, deps = [], delay = 0, timeout = 360) {
 }
 
 function UrlInfo(d) {
-  const urlAttribute = /(href|ref|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+'))/gsm;
+  const urlAttribute = /(?<=^|:)(?:(href|ref|(data-)?(src(set)?)|(((\w)+-)*url))=("[^"]+"|'[^']+')|content=((")(?:(?!\w+")[^",\s\/]*((\/)[^",\s\/]*)+")|(')(?:(?!\w+')[^',\s\/]*((\/)[^',\s\/]*)+')))/gs;
   const nestedStr = /(&quot;|&#34;|&apos;|&#39;)[^&]*((?:(?!(&quot;|&#34;|&apos;|&#39;))&[^;]+)[^&]*)*(&quot;|&#34;|&apos;|&#39;)/gsm;
   const styles = /<\s*style[^<>]*>(?:(?!<\s*\/\s*style\s*>).)+<\s*\/\s*style\s*>/gsmi;
   const scripts = /<\s*meta[^>]*>|<\s*link[^>]*>|<\s*script[^>]*>[^">'`\/\*]*((\/\*((?!\*\/).)*\*\/|\/\/.*$|"[^"]*"|'[^']*'|`[^`]*`|\/|\*|>)[^"'`\/\*]*)*<\/\s*script\s*>/gsmi;
@@ -1912,7 +1912,7 @@ function UrlInfo(d) {
 }
 
 function QuoteAttributes(attributes) {
-  return attributes.replace(/([-:\w]+)=("[^"]*"|'[^']*'|[^\s"'<>`]+)/g, function (all, name, value) {
+  return attributes.replace(/([-:\w]+)\s*=\s*("[^"]*"|'[^']*'|[^\s"'<>`]+)/g, function (all, name, value) {
     const quoted = value[0] === '"' || value[0] === "'" ? value : `"${value}"`;
     return name.toLowerCase() + "=" + quoted;
   });

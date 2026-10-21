@@ -91,3 +91,18 @@ test("a style attribute without a url is left alone", () => {
   const out = run(page('<div style="color:red">x</div>'));
   assert.ok(out.includes('<div style="color:red">x</div>'), out);
 });
+
+test("spaces around the equals sign of an attribute are accepted", () => {
+  const out = run(page('<a  href = "/x"   title = "t">l</a>'));
+  assert.ok(out.includes('<a href="http://localhost:8000?R=ABS/x" title="t">l</a>'), out);
+});
+
+test("an attribute that only mentions href in its value is not turned into a link", () => {
+  const out = run(page(`<div onclick="location.href='/x'" data-note="see src='a.png'">c</div>`));
+  assert.ok(out.includes(`<div onclick="location.href='/x'" data-note="see src='a.png'">c</div>`), out);
+});
+
+test("a namespaced href attribute is still rewritten", () => {
+  const out = run(page('<svg><use xlink:href="/s.svg#a"></use></svg>'));
+  assert.ok(out.includes('xlink:href="http://localhost:8000?R=ABS/s.svg#a"'), out);
+});
